@@ -10,7 +10,7 @@ double& LINALG::SymmetricMatrix::operator()(unsigned long i, unsigned long j) {
     return values[getGlobalIndex(i, j)];
 }
 
-const unsigned long LINALG::SymmetricMatrix::getGlobalIndex(unsigned long i, unsigned long j) const {
+unsigned long LINALG::SymmetricMatrix::getGlobalIndex(unsigned long i, unsigned long j) const {
     // only right top matrix is in the values
     // swap variable if
     unsigned long tmpVar;
@@ -21,6 +21,7 @@ const unsigned long LINALG::SymmetricMatrix::getGlobalIndex(unsigned long i, uns
     }
 
     if(i >= size) throw std::out_of_range("The index exceeds the bounds of the Matrix");
+
 
 
     tmpVar = (size*(size+1))/2-((size-i)*(size-i+1))/2+j-i;
@@ -68,6 +69,6 @@ double LINALG::SymmetricMatrix::vectorSquaredMul(const LINALG::Vector vector) co
     return result;
 }
 
-const unsigned long LINALG::SymmetricMatrix::getSize() const {
+unsigned long LINALG::SymmetricMatrix::getSize() const {
     return size;
 }

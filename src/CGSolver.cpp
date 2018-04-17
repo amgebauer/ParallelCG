@@ -20,7 +20,6 @@ void SOLVE::CGSolver::solve(const LINALG::SymmetricMatrix &matrix,
 
     int iter = 0;
     while (r_squared > epsilonSquared) {
-        std::cout<<"iter: "<<iter<<", res="<<r_squared<<" > "<<epsilonSquared<<std::endl;
         const LINALG::Vector tmpVector = matrix*p;
 
         double alpha = r_squared/(p*tmpVector);

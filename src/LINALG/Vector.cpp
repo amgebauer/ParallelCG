@@ -19,7 +19,7 @@ const double &LINALG::Vector::get(const unsigned long i) const {
     return values[i];
 }
 
-const unsigned long LINALG::Vector::getSize() const {
+unsigned long LINALG::Vector::getSize() const {
     return size;
 }
 

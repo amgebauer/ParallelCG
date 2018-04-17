@@ -18,7 +18,7 @@ namespace LINALG {
     public:
         explicit Vector(unsigned long size);
 
-        const unsigned long getSize() const;
+        unsigned long getSize() const;
 
     public:
         double& operator()(unsigned long i);
