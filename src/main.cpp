@@ -54,8 +54,30 @@ std::ostream& operator<<(std::ostream& os, const LINALG::Vector& vector)
     return os;
 }
 
-int main() {
-    const int size = 1000;
+int main(int argc, char* argv[]) {
+    // init mpi
+    MPI::MpiInfo info = MPI::MpiInfo::Init(&argc, &argv);
+
+    LINALG::DistributedVector vector_test(2*static_cast<unsigned long>(info.getSize()),
+                                      2*static_cast<unsigned long>(info.getRank()),
+                                      2);
+
+    vector_test(static_cast<unsigned long>(2*info.getRank())) = 2*info.getRank()+1;
+    vector_test(static_cast<unsigned long>(2*info.getRank())+1) = 2*info.getRank()+2;
+
+    std::cout<<vector_test(static_cast<unsigned long>(2*info.getRank()))<<std::endl;
+
+    double result = vector_test.distributedProduct(vector_test, info);
+
+    if(result != 4*info.getSize()) {
+        std::cout<<"FEHLER!"<<std::endl;
+        std::cout<<result<<" instead of "<<4*info.getSize()<<std::endl;
+        return 1;
+    }
+
+
+
+    const int size = 5000;
 
     LINALG::SymmetricMatrix matrix(size);
     LINALG::Vector vector(size), solution(size);
@@ -72,8 +94,10 @@ int main() {
     std::cout<<"Solve Ax=b mit "<<std::endl<<"A = "<<matrix<<"\n\n"<<"b = "<<vector<<"\n\n";
 
     // Solve:
-    SOLVE::CGSolver::solve(matrix, vector, solution, 1e-5);
+    SOLVE::CGSolver::solveSerial(matrix, vector, solution, 1e-5);
 
     std::cout<<"Solution found: x = "<<solution<< std::endl;
+
+    info.finalize();
     return 0;
 }

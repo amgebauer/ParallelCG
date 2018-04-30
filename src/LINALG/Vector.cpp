@@ -72,27 +72,29 @@ void LINALG::Vector::sub(const LINALG::Vector &vector) {
 }
 
 void LINALG::Vector::add(const LINALG::Vector &v1, const LINALG::Vector &v2, LINALG::Vector &result) {
-    for (unsigned long i = 0;i<v1.getSize();++i) {
+    unsigned long size = v1.getSize();
+    for (unsigned long i = 0;i<size;++i) {
         result(i) = v1.get(i) + v2.get(i);
     }
 }
 
 void LINALG::Vector::sub(const LINALG::Vector &v1, const LINALG::Vector &v2, LINALG::Vector &result) {
-    for (unsigned long i = 0;i<v1.getSize();++i) {
+    unsigned long size = v1.getSize();
+    for (unsigned long i = 0;i<size;++i) {
         result(i) = v1.get(i) - v2.get(i);
     }
 }
 
 double LINALG::Vector::normSquared() const {
     double result = 0;
-    for (unsigned long i = 0;i<getSize();++i) {
+    for (unsigned long i = 0;i<size;++i) {
         result += std::pow(get(i), 2);
     }
     return result;
 }
 
 void LINALG::Vector::scale(const double lambda) {
-    for (unsigned long i = 0;i<getSize();++i) {
+    for (unsigned long i = 0;i<size;++i) {
         (i) += (i)*lambda;
     }
 }
