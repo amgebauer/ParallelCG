@@ -36,9 +36,10 @@ const double& LINALG::SymmetricMatrix::get(unsigned long i, unsigned long j) con
 LINALG::Vector LINALG::SymmetricMatrix::operator*(LINALG::Vector& vector) const {
     LINALG::Vector result(getSize());
 
-    for (unsigned long i=0;i<vector.getSize();++i) {
+    const unsigned long vectorSize = vector.getSize();
+    for (unsigned long i=0;i<vectorSize;++i) {
 
-        for (unsigned long j=0;j<vector.getSize();++j) {
+        for (unsigned long j=0;j<vectorSize;++j) {
 
             result(i) += get(i, j) * vector(j);
 
@@ -52,9 +53,10 @@ LINALG::Vector LINALG::SymmetricMatrix::operator*(LINALG::Vector& vector) const 
 double LINALG::SymmetricMatrix::vectorSquaredMul(const LINALG::Vector vector) const {
     double result = 0;
 
-    for (unsigned long i=0;i<vector.getSize();++i) {
+    const unsigned long vectorSize = vector.getSize();
+    for (unsigned long i=0;i<vectorSize;++i) {
 
-        for (unsigned long j=i;j<vector.getSize();++j) {
+        for (unsigned long j=i;j<vectorSize;++j) {
 
             if(i == j) {
                 result += get(i, j) * vector.get(j)*vector.get(i);
