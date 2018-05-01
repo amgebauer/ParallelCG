@@ -6,6 +6,7 @@
 #include <cmath>
 #include <mpi.h>
 #include <iostream>
+#include <stdexcept>
 
 LINALG::DistributedVector::DistributedVector(unsigned long globalSize, unsigned long startRow,
                                              unsigned long localSize)
