@@ -17,6 +17,13 @@ unsigned long LINALG::DistributedSymmetricMatrix::getLocalIndex(unsigned long i,
         throw std::out_of_range("The requested value is not sitting on this processor");
     }
 
+    unsigned long tmpVar;
+    if(i > j && j >= startRow && j < startRow+localSize) {
+        tmpVar = j;
+        j = i;
+        i = tmpVar;
+    }
+
     // ToDo: More advanced saving technique
     // right now we are not exploiting the symmetric structure of the matrix
 

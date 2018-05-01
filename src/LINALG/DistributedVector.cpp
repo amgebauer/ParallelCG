@@ -159,3 +159,7 @@ LINALG::Vector LINALG::DistributedVector::getFull(MPI::MpiInfo& mpiInfo) const {
     return result;
 }
 
+double LINALG::DistributedVector::distributedNormSquared(MPI::MpiInfo &mpiInfo) const {
+    return this->distributedProduct(*this, mpiInfo);
+}
+

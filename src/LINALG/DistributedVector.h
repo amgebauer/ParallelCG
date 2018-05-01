@@ -33,6 +33,7 @@ namespace LINALG {
         DistributedVector operator-(const DistributedVector& vector) const;
 
         double distributedProduct(const DistributedVector& vector, MPI::MpiInfo& mpiInfo) const;
+        double distributedNormSquared(MPI::MpiInfo& mpiInfo) const;
         Vector getFull(MPI::MpiInfo& mpiInfo) const;
 
         const double& get(unsigned long i) const;

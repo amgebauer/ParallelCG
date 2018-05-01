@@ -50,6 +50,8 @@ void SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &ma
 
     double r_squared = r.distributedProduct(r, mpiInfo);
 
+    std::cout<<"hi"<<std::endl;
+
     int iter = 0;
     while(r_squared > epsilonSquared) {
         LINALG::Vector p_full = p.getFull(mpiInfo);
@@ -59,7 +61,6 @@ void SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &ma
 
         result.add(alpha, p);
         r.add(-alpha, tmpVector);
-
         double r_squared_new = r.distributedProduct(r, mpiInfo);
         double beta = r_squared_new / r_squared;
         r_squared = r_squared_new;
