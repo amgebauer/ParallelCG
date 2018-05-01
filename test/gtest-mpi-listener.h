@@ -121,11 +121,7 @@ public:
     }
 
 private:
-    // Disallow copying
-    MPIEnvironment(const MPIEnvironment& env) {}
-
-    MPI::MpiInfo mpiInfo = nullptr;
-
+    MPI::MpiInfo mpiInfo;
 };
 
 // This class more or less takes the code in Google Test's
