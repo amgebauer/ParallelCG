@@ -58,25 +58,6 @@ int main(int argc, char* argv[]) {
     // init mpi
     MPI::MpiInfo info = MPI::MpiInfo::Init(&argc, &argv);
 
-    LINALG::DistributedVector vector_test(2*static_cast<unsigned long>(info.getSize()),
-                                      2*static_cast<unsigned long>(info.getRank()),
-                                      2);
-
-    vector_test(static_cast<unsigned long>(2*info.getRank())) = 2*info.getRank()+1;
-    vector_test(static_cast<unsigned long>(2*info.getRank())+1) = 2*info.getRank()+2;
-
-    std::cout<<vector_test(static_cast<unsigned long>(2*info.getRank()))<<std::endl;
-
-    double result = vector_test.distributedProduct(vector_test, info);
-
-    if(result != 4*info.getSize()) {
-        std::cout<<"FEHLER!"<<std::endl;
-        std::cout<<result<<" instead of "<<4*info.getSize()<<std::endl;
-        return 1;
-    }
-
-
-
     const int size = 5000;
 
     LINALG::SymmetricMatrix matrix(size);

@@ -21,7 +21,7 @@ script:
   - mpirun -np 2 ./CGMethodTest
 
 after_success:
-  - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*"
+  - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*" -E ".*build*." -E ".*test/*."
 
 notifications:
   email: false
