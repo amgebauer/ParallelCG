@@ -119,3 +119,22 @@ TEST(DistributedVectorTests, VectorSub) {
         ASSERT_FLOAT_EQ(v3(i), 2*i);
     }
 }
+
+TEST(DistributedVectorTests, OutOfRange) {
+
+    const int localSize = 100;
+    MPI::MpiInfo mpiInfo = MPI::MpiInfo::Create();
+    const int vectorLength = localSize*mpiInfo.getSize();
+
+
+    // generate two random vectors
+    LINALG::DistributedVector v1((unsigned long) vectorLength,
+                                 static_cast<unsigned long>(localSize * mpiInfo.getRank()), localSize);
+
+    ASSERT_THROW(
+        for(int i=0;i<v1.getSize();++i) {
+            v1(i) = v1.get(i);
+        }
+    , std::out_of_range);
+
+}

@@ -96,6 +96,6 @@ double LINALG::Vector::normSquared() const {
 
 void LINALG::Vector::scale(const double lambda) {
     for (unsigned long i = 0;i<size;++i) {
-        (i) += (i)*lambda;
+        operator()(i) *= lambda;
     }
 }
