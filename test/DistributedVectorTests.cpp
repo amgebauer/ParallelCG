@@ -101,7 +101,6 @@ TEST(DistributedVectorTests, VectorSub) {
 
 
     // generate two random vectors
-    double correctResult = 0.0;
     LINALG::DistributedVector v1((unsigned long) vectorLength,
                                  static_cast<unsigned long>(localSize * mpiInfo.getRank()), localSize);
     LINALG::DistributedVector v2((unsigned long) vectorLength,
