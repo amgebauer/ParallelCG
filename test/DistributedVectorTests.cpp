@@ -48,8 +48,7 @@ TEST(DistributedVectorTests, GetFull) {
             myStartRow += 1;
         }
 
-        // generate two random vectors
-        double correctResult = 0.0;
+        // generate vectors
         LINALG::DistributedVector vector((unsigned long) vectorLength, myStartRow, mySize);
 
         for (int i=0;i<mySize;++i) {
@@ -57,11 +56,6 @@ TEST(DistributedVectorTests, GetFull) {
         }
 
         LINALG::Vector fullVector = vector.getFull(mpiInfo);
-
-        if(mpiInfo.getRank() == 0) {
-            for (int i=0;i<vectorLength;++i) {
-            }
-        }
 
         ASSERT_GT(vectorLength, 0);
         for (int i=0;i<vectorLength;++i) {

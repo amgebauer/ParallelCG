@@ -18,6 +18,7 @@ script:
   - cmake -H. -Bbuild
   - cd build
   - cmake --build .
+  - ./CGMethodTest
 
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*"
