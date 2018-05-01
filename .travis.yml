@@ -19,6 +19,7 @@ script:
   - cd build
   - cmake --build .
   - mpirun -np 2 ./CGMethodTest
+  - mpirun -np 4 ./CGMethodTest
 
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*" -E ".*gtest.*"

@@ -105,7 +105,7 @@ void LINALG::DistributedVector::scale(double lambda) {
     }
 }
 
-double LINALG::DistributedVector::distributedProduct(const LINALG::DistributedVector &vector, MPI::MpiInfo& mpiInfo) const {
+double LINALG::DistributedVector::distributedProduct(const LINALG::DistributedVector &vector) const {
     double localProduct = 0.0;
     const unsigned long endRow = startRow+localSize;
     for (unsigned long i = startRow;i<endRow;++i) {
@@ -143,7 +143,7 @@ LINALG::Vector LINALG::DistributedVector::getFull(MPI::MpiInfo& mpiInfo) const {
 
     // extract values from receiving array
     int gap = 0;
-    int breakpoint = globalSize % mpiInfo.getSize();
+    unsigned long breakpoint = globalSize % mpiInfo.getSize();
     for(unsigned long i=0;i<globalSize;++i) {
         if(i > breakpoint*elementsPerProc && breakpoint > 0) {
             gap = static_cast<int>((i - breakpoint * elementsPerProc) / (elementsPerProc - 1));
@@ -159,7 +159,7 @@ LINALG::Vector LINALG::DistributedVector::getFull(MPI::MpiInfo& mpiInfo) const {
     return result;
 }
 
-double LINALG::DistributedVector::distributedNormSquared(MPI::MpiInfo &mpiInfo) const {
-    return this->distributedProduct(*this, mpiInfo);
+double LINALG::DistributedVector::distributedNormSquared() const {
+    return this->distributedProduct(*this);
 }
 

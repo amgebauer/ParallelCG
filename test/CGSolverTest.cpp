@@ -34,17 +34,24 @@ TEST(CGSolverTest, SerialTest) {
     ASSERT_LT(error, 1e-8);
 }
 
-/*TEST(CGSolverTest, ParallelTest) {
+TEST(CGSolverTest, ParallelTest) {
     MPI::MpiInfo info = MPI::MpiInfo::Create();
 
     for (unsigned long size=100;size<110;++size) {
 
+        unsigned long rank = static_cast<unsigned long>(info.getRank());
         unsigned long mySize = size / info.getSize();
         unsigned long breakpoint = size % info.getSize();
-        unsigned long myStart = mySize*info.getRank()+breakpoint;
-        if(breakpoint > 0 && info.getRank() < breakpoint) {
+        unsigned long myStart = mySize*info.getRank();
+        if(breakpoint > 0 && rank < breakpoint) {
             ++mySize;
         }
+        if(rank < breakpoint) {
+            myStart += info.getRank();
+        } else {
+            myStart += breakpoint;
+        }
+        unsigned long myEnd = myStart+mySize;
 
         // build serial and parallel matrices and vectors
         LINALG::SymmetricMatrix serialMatrix(size);
@@ -58,22 +65,42 @@ TEST(CGSolverTest, SerialTest) {
         // fill matrices and vectors
         for (unsigned long i=0;i<size;++i) {
 
-            for (unsigned long j=i;j<size;++j) {
+            for (unsigned long j=0;j<size;++j) {
 
                 serialMatrix(i,j) = (i+1)*(j+1);
                 if(i == j) serialMatrix(i,j) += size;
 
-                if(i >= myStart && i < myStart+mySize) {
+                if(i >= myStart && i < myEnd) {
                     parallelMatrix(i,j) = (i+1)*(j+1);
                     if(i == j) parallelMatrix(i,j) += size;
                 }
             }
 
             serialVector(i) = (i+1);
-            if(i >= myStart && i < myStart+mySize) {
+            if(i >= myStart && i < myEnd) {
                 parallelVector(i) = (i+1);
             }
         }
+
+        ASSERT_FLOAT_EQ(serialVector.normSquared(), parallelVector.distributedNormSquared());
+
+        // check, whether both vectors are the same
+        double error = (serialVector-parallelVector.getFull(info)).normSquared();
+        ASSERT_FLOAT_EQ(error, 0);
+
+        // check matrix column wise
+        for(unsigned long i=myStart;i<myEnd;++i) {
+
+            for (unsigned long j=0;j<size;++j) {
+                ASSERT_FLOAT_EQ(serialMatrix(i,j), parallelMatrix(i,j));
+            }
+
+        }
+
+        // check, whether both are the same
+        error = (serialMatrix*serialVector-(parallelMatrix*parallelVector.getFull(info)).getFull(info)).normSquared();
+        ASSERT_FLOAT_EQ(error, 0);
+
 
         // First solve serial reference system
         SOLVE::CGSolver::solveSerial(serialMatrix, serialVector, serialSolution, 1e-8);
@@ -86,7 +113,7 @@ TEST(CGSolverTest, SerialTest) {
         ASSERT_LT(serialError, 1e-8);
 
         LINALG::Vector fullParallelSolution = parallelSolution.getFull(info);
-        double parallelError = sqrt((parallelMatrix*fullParallelSolution-parallelVector).distributedNormSquared(info));
+        double parallelError = sqrt((parallelMatrix*fullParallelSolution-parallelVector).distributedNormSquared());
         ASSERT_LT(parallelError, 1e-8);
 
         // compare solutions
@@ -94,4 +121,4 @@ TEST(CGSolverTest, SerialTest) {
             ASSERT_NEAR(serialSolution(i), fullParallelSolution(i), 2e-8);
         }
     }
-}*/
+}

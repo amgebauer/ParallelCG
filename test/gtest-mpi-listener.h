@@ -92,7 +92,7 @@
 // to finalize MPI.
 class MPIEnvironment : public ::testing::Environment {
 public:
-    MPIEnvironment(MPI::MpiInfo info) : mpiInfo(info), ::testing::Environment() {}
+    MPIEnvironment(MPI::MpiInfo info) : ::testing::Environment(), mpiInfo(info) {}
 
     virtual ~MPIEnvironment() {}
 

@@ -105,7 +105,7 @@ TEST(VectorTests, InPlaceScale) {
     LINALG::Vector unscaledVector(vector);
     vector.scale(scaleFactor);
 
-    for(int i=0;i<vector.getSize();++i) {
+    for(unsigned long i=0;i<vector.getSize();++i) {
         ASSERT_FLOAT_EQ(vector(i), unscaledVector(i)*scaleFactor);
     }
 

@@ -29,7 +29,30 @@ TEST(DistributedVectorTests, ScalarProduct) {
         correctResult += i*(-i);
     }
 
-    ASSERT_FLOAT_EQ(correctResult, v1.distributedProduct(v2, mpiInfo));
+    ASSERT_FLOAT_EQ(correctResult, v1.distributedProduct(v2));
+}
+
+TEST(DistributedVectorTests, NormSquared) {
+
+    const int localSize = 100;
+    MPI::MpiInfo mpiInfo = MPI::MpiInfo::Create();
+    const int vectorLength = localSize*mpiInfo.getSize();
+
+
+    // generate two random vectors
+    double correctResult = 0.0;
+    LINALG::DistributedVector v1((unsigned long) vectorLength,
+                                 static_cast<unsigned long>(localSize * mpiInfo.getRank()), localSize);
+
+    for (int i=0;i<localSize;++i) {
+        v1(static_cast<unsigned long>(mpiInfo.getRank() * localSize + i)) = mpiInfo.getRank()*localSize+i;
+    }
+
+    for (int i=0;i<vectorLength;++i) {
+        correctResult += i*i;
+    }
+
+    ASSERT_FLOAT_EQ(correctResult, v1.distributedNormSquared());
 }
 
 TEST(DistributedVectorTests, GetFull) {
@@ -51,7 +74,7 @@ TEST(DistributedVectorTests, GetFull) {
         // generate vectors
         LINALG::DistributedVector vector((unsigned long) vectorLength, myStartRow, mySize);
 
-        for (int i=0;i<mySize;++i) {
+        for (unsigned long i=0;i<mySize;++i) {
             vector(myStartRow+i) = myStartRow+i;
         }
 
@@ -131,9 +154,15 @@ TEST(DistributedVectorTests, OutOfRange) {
                                  static_cast<unsigned long>(localSize * mpiInfo.getRank()), localSize);
 
     ASSERT_THROW(
-        for(int i=0;i<v1.getSize();++i) {
-            v1(i) = v1.get(i);
+        for(unsigned long i=0;i<v1.getSize();++i) {
+            v1(i) = 1;
         }
+    , std::out_of_range);
+
+    ASSERT_THROW(
+            for(unsigned long i=0;i<v1.getSize();++i) {
+                v1.get(i);
+            }
     , std::out_of_range);
 
 }
@@ -269,7 +298,7 @@ TEST(DistributedVectorTests, InPlaceVectorScale) {
 
     ASSERT_GT(v1.getLocalSize(), 1);
 
-    for(int i=v1.getStartRow();i<v1.getStartRow()+v1.getLocalSize();++i) {
+    for(unsigned long i=v1.getStartRow();i<v1.getStartRow()+v1.getLocalSize();++i) {
         ASSERT_FLOAT_EQ(v1(i), scale*i);
     }
 }
