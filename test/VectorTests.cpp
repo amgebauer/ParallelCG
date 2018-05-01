@@ -6,6 +6,7 @@
 #include <cmath>
 #include "../src/LINALG/Vector.h"
 #include "../src/Utils/Random.h"
+#include "../src/LINALG/DimensionMismatch.h"
 
 TEST(VectorTests, ScalarProduct) {
 
@@ -109,4 +110,10 @@ TEST(VectorTests, InPlaceScale) {
     }
 
     ASSERT_FLOAT_EQ(correctResult, vector.normSquared());
+}
+TEST(VectorTests, DimensionException) {
+    LINALG::Vector vector1(100);
+    LINALG::Vector vector2(101);
+
+    ASSERT_THROW(vector1+vector2, LINALG::DimensionMismatch);
 }

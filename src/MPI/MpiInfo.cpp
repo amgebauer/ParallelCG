@@ -31,6 +31,6 @@ MPI::MpiInfo MPI::MpiInfo::Create() {
     return info;
 }
 
-void MPI::MpiInfo::finalize() const {
-    MPI_Finalize();
+bool MPI::MpiInfo::finalize() const {
+    return MPI_Finalize() == MPI_SUCCESS;
 }

@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     MPI::MpiInfo mpiInfo = MPI::MpiInfo::Init(&argc, &argv);
 
     // Add object that will finalize MPI on exit; Google Test owns this pointer
-    ::testing::AddGlobalTestEnvironment(new MPIEnvironment);
+    ::testing::AddGlobalTestEnvironment(new MPIEnvironment(mpiInfo));
 
     // Get the event listener list.
     ::testing::TestEventListeners& listeners =

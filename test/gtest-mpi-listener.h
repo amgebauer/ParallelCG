@@ -83,6 +83,7 @@
 #define GTEST_MPI_MINIMAL_LISTENER_H
 
 #include "mpi.h"
+#include "../src/MPI/MpiInfo.h"
 #include <gtest/gtest.h>
 #include <cassert>
 #include <vector>
@@ -91,7 +92,7 @@
 // to finalize MPI.
 class MPIEnvironment : public ::testing::Environment {
 public:
-    MPIEnvironment() : ::testing::Environment() {}
+    MPIEnvironment(MPI::MpiInfo info) : mpiInfo(info), ::testing::Environment() {}
 
     virtual ~MPIEnvironment() {}
 
@@ -113,7 +114,7 @@ public:
             int rank;
             ASSERT_EQ(MPI_Comm_rank(MPI_COMM_WORLD, &rank), MPI_SUCCESS);
             if (rank == 0) { printf("Finalizing MPI...\n"); }
-            ASSERT_EQ(MPI_Finalize(), MPI_SUCCESS);
+            ASSERT_TRUE(mpiInfo.finalize());
         }
         ASSERT_EQ(MPI_Finalized(&is_mpi_finalized), MPI_SUCCESS);
         ASSERT_TRUE(is_mpi_finalized);
@@ -122,6 +123,8 @@ public:
 private:
     // Disallow copying
     MPIEnvironment(const MPIEnvironment& env) {}
+
+    MPI::MpiInfo mpiInfo = nullptr;
 
 };
 

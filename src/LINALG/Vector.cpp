@@ -10,13 +10,13 @@
 LINALG::Vector::Vector(const unsigned long size) : size(size), values(size) {}
 
 double& LINALG::Vector::operator()(const unsigned long i) {
-    if (i >= size) throw DimensionMismatch();
+    if (i >= size) throw std::out_of_range("index is out of range");
     return values[i];
 }
 
 
 const double &LINALG::Vector::get(const unsigned long i) const {
-    if (i >= size) throw DimensionMismatch();
+    if (i >= size) throw std::out_of_range("index is out of range");
     return values[i];
 }
 

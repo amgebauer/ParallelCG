@@ -19,7 +19,7 @@ namespace MPI {
         int getRank() const;
         int getSize() const;
 
-        void finalize() const;
+        bool finalize() const;
 
         static MPI::MpiInfo Init(int* argc, char*** argv);
         static MPI::MpiInfo Create();

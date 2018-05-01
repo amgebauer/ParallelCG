@@ -39,3 +39,17 @@ TEST(DistributedSymmetricMatrixTest, MatrixVectorMul) {
 
     }
 }
+
+TEST(DistributedSymmetricMatrixTest, OutOfRange) {
+    LINALG::DistributedSymmetricMatrix matrix(2, 0, 1);
+
+    ASSERT_THROW(matrix(2,2), std::out_of_range);
+}
+
+TEST(DistributedSymmetricMatrixTest, MatrixProperties) {
+    LINALG::DistributedSymmetricMatrix matrix(100, 32, 5);
+
+    ASSERT_EQ(100, matrix.getGlobalSize());
+    ASSERT_EQ(5, matrix.getLocalSize());
+    ASSERT_EQ(32, matrix.getLocalStartRow());
+}
