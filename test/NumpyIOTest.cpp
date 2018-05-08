@@ -6,6 +6,7 @@
 #include <fstream>
 #include "../src/LINALG/Vector.h"
 #include "../src/NUMPY/NumpyUtils.h"
+#include "../src/NUMPY/NumpyIOException.h"
 
 TEST(NumpyTests, ReadHeaderTest) {
 
@@ -14,6 +15,23 @@ TEST(NumpyTests, ReadHeaderTest) {
 
     std::vector<unsigned long> shape(0);
     NUMPY::NumpyUtils::readHeader(myFile, shape);
+
+    myFile.seekg(0);
+    ASSERT_THROW(
+
+    // open file
+            std::ifstream myFileFail ("test/NumpyIOTest.cpp", std::ios::in | std::ios::binary);
+            NUMPY::NumpyUtils::readHeader(myFileFail, shape),
+            NUMPY::NumpyIOException
+    );
+}
+
+TEST(NumpyTests, FullVectorFailTest) {
+    LINALG::Vector vector(0);
+    ASSERT_THROW(
+            NUMPY::NumpyUtils::readFullVector("test/data/testmat.npy", vector);
+    , NUMPY::NumpyIOException
+    );
 }
 
 TEST(NumpyTests, ReadFullVectorTest) {
@@ -55,4 +73,12 @@ TEST(NumpyTests, ReadFullMatrixTest) {
         }
     }
 
+}
+
+TEST(NumpyTests, FullMatrixFailTest) {
+    LINALG::SymmetricMatrix matrix(0);
+    ASSERT_THROW(
+            NUMPY::NumpyUtils::readFullSymmetricMatrix("test/data/testarr.npy", matrix);
+    , NUMPY::NumpyIOException
+    );
 }
