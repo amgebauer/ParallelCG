@@ -5,6 +5,8 @@
 #include <iostream>
 #include "NumpyUtils.h"
 #include "NumpyIOException.h"
+#include <string.h>
+#include <stdexcept>
 
 void NUMPY::NumpyUtils::readFullVector(std::string fileName, LINALG::Vector &vector) {
     std::vector<unsigned long> shape(0);
