@@ -3,7 +3,6 @@
 //
 
 #include "DistributedSymmetricMatrix.h"
-#include <stdexcept>
 #include <iostream>
 
 LINALG::DistributedSymmetricMatrix::DistributedSymmetricMatrix(unsigned long size,
@@ -17,9 +16,8 @@ unsigned long LINALG::DistributedSymmetricMatrix::getLocalIndex(unsigned long i,
         // this item is not available on this processor
         throw std::out_of_range("The requested value is not sitting on this processor");
     }
-    unsigned long tmpVar;
     if(i > j && j >= startRow && j < startRow+localSize) {
-        tmpVar = j;
+        unsigned long tmpVar = j;
         j = i;
         i = tmpVar;
     }

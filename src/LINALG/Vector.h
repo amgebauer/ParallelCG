@@ -13,7 +13,7 @@ namespace LINALG {
 
     class Vector {
     private:
-        const unsigned long size;
+        unsigned long size;
         std::vector<double> values;
     public:
         explicit Vector(unsigned long size);
@@ -38,11 +38,16 @@ namespace LINALG {
 
         double normSquared() const;
 
+        void resize(unsigned long newSize);
+        void push_back(double value);
+
         //friend std::ostream&operator<<(std::ostream& os, const Vector& vector);
 
 
         static void add(const LINALG::Vector& v1, const LINALG::Vector& v2, LINALG::Vector& result);
         static void sub(const LINALG::Vector& v1, const LINALG::Vector& v2, LINALG::Vector& result);
+
+
     };
 
 }

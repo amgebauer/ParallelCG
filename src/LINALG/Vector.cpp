@@ -5,7 +5,6 @@
 #include <cmath>
 #include "Vector.h"
 #include "DimensionMismatch.h"
-#include <stdexcept>
 
 LINALG::Vector::Vector(const unsigned long size) : size(size), values(size) {}
 
@@ -98,4 +97,14 @@ void LINALG::Vector::scale(const double lambda) {
     for (unsigned long i = 0;i<size;++i) {
         operator()(i) *= lambda;
     }
+}
+
+void LINALG::Vector::resize(const unsigned long newSize) {
+    values.resize(newSize, 0.0);
+    size = newSize;
+}
+
+void LINALG::Vector::push_back(const double value) {
+    values.resize(size+1, value);
+    ++size;
 }

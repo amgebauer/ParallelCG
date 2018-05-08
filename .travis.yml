@@ -9,7 +9,7 @@ addons:
       - ubuntu-toolchain-r-test
 
 before_install:
-  - pip install --user cpp-coveralls
+  - pip install --user cpp-coveralls numpy
   - test -n $CC  && unset CC
   - test -n $CXX && unset CXX
 install:
@@ -18,8 +18,10 @@ script:
   - cmake -H. -Bbuild
   - cd build
   - cmake --build .
-  - mpirun -np 2 ./CGMethodTest
-  - mpirun -np 4 ./CGMethodTest
+  - cd ../
+  - mpirun -np 2 ./build/CGMethodTest
+  - mpirun -np 4 ./build/CGMethodTest
+  - python ./test/testNumpyO.py
 
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*" -E ".*gtest.*"

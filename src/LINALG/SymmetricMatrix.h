@@ -12,7 +12,7 @@ namespace LINALG {
 
     class SymmetricMatrix {
     private:
-        const unsigned long size;
+        unsigned long size;
         std::vector<double> values;
 
         unsigned long getGlobalIndex(unsigned long i, unsigned long j) const;
@@ -25,6 +25,7 @@ namespace LINALG {
         LINALG::Vector operator*(LINALG::Vector& vector) const;
 
         unsigned long getSize() const;
+        void resize(unsigned long newsize);
 
         double vectorSquaredMul(LINALG::Vector vector) const;
     };

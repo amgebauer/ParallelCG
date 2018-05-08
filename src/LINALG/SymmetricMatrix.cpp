@@ -3,7 +3,6 @@
 //
 
 #include "SymmetricMatrix.h"
-#include <stdexcept>
 
 LINALG::SymmetricMatrix::SymmetricMatrix(const unsigned long size) : size(size), values(size*(size+1)/2) {}
 
@@ -74,4 +73,9 @@ double LINALG::SymmetricMatrix::vectorSquaredMul(const LINALG::Vector vector) co
 
 unsigned long LINALG::SymmetricMatrix::getSize() const {
     return size;
+}
+
+void LINALG::SymmetricMatrix::resize(unsigned long newsize) {
+    values.resize(newsize*(newsize+1)/2);
+    size = newsize;
 }
