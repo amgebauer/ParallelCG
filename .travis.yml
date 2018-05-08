@@ -15,7 +15,6 @@ before_install:
 install:
   - sudo apt-get install libcr-dev mpich2 mpich2-doc g++-7
 script:
-  - CC=gcc-7 && CXX=g++-7
   - cmake -H. -Bbuild
   - cd build
   - cmake --build .
