@@ -5,6 +5,7 @@
 #include <cmath>
 #include "Vector.h"
 #include "DimensionMismatch.h"
+#include <stdexcept>
 
 LINALG::Vector::Vector(const unsigned long size) : size(size), values(size) {}
 

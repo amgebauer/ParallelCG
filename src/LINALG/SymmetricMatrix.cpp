@@ -3,6 +3,7 @@
 //
 
 #include "SymmetricMatrix.h"
+#include <stdexcept>
 
 LINALG::SymmetricMatrix::SymmetricMatrix(const unsigned long size) : size(size), values(size*(size+1)/2) {}
 
