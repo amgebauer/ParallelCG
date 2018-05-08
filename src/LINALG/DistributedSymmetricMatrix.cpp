@@ -4,6 +4,7 @@
 
 #include "DistributedSymmetricMatrix.h"
 #include <iostream>
+#include <stdexcept>
 
 LINALG::DistributedSymmetricMatrix::DistributedSymmetricMatrix(unsigned long size,
                                                                unsigned long startRow,
