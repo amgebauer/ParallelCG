@@ -16,7 +16,7 @@ namespace NUMPY {
 
     public:
         static void readFullVector(std::string fileName, LINALG::Vector& vector);
-        static void readFullSymmetricMatrix(std::string fileName, LINALG::SymmetricMatrix& vector);
+        static void readFullSymmetricMatrix(std::string fileName, LINALG::SymmetricMatrix& matrix);
 
         static void writeFullVector(std::string fileName, LINALG::Vector& vector);
 
