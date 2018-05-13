@@ -3,59 +3,8 @@
 #include "CGSolver.h"
 #include "NUMPY/NumpyUtils.h"
 
-std::ostream& operator<<(std::ostream& os, const LINALG::SymmetricMatrix& matrix)
-{
-    os<<"[\n   ";
-    for(unsigned long i=0;i<matrix.getSize();++i) {
 
-        if(i > 0) {
-            os << "\n   ";
-        }
-
-        if(i < 3 || matrix.getSize() <= 5 || i+1 == matrix.getSize()) {
-            for(unsigned long j=0;j<matrix.getSize();++j) {
-                if(j > 0) {
-                    os << ", ";
-                }
-
-                if (j < 3 || matrix.getSize() <= 5 || j+1 == matrix.getSize()) {
-                    os << matrix.get(i,j);
-                } else {
-                    os << "...";
-                    j = matrix.getSize()-2;
-                }
-            }
-        }
-        else {
-            os << "       ...";
-            i = matrix.getSize()-2;
-        }
-    }
-    os << "\n]";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const LINALG::Vector& vector)
-{
-    os<<"[";
-    for(unsigned long i=0;i<vector.getSize();++i) {
-        if(i > 0) {
-            os << ", ";
-        }
-
-        if(i < 3 || vector.getSize() <= 5 || i+1 == vector.getSize()) {
-            os << vector.get(i);
-        } else {
-            os << "       ...";
-            i = vector.getSize()-2;
-        }
-
-    }
-    os << "]";
-    return os;
-}
-
-void usage(std::string program_name, MPI::MpiInfo info) {
+void usage(const std::string &program_name, MPI::MpiInfo info) {
     if(info.getRank() == 0) {
         std::cout<<"There are two ways to call the programm"<<std::endl<<std::endl;
         std::cout<<"Problem from NumPy file:"<<std::endl<<std::endl;
@@ -75,7 +24,7 @@ int main(int argc, char* argv[]) {
     // init mpi
     MPI::MpiInfo info = MPI::MpiInfo::Init(&argc, &argv);
 
-    std::string solution_file = "";
+    std::string solution_file;
 
     // create matrix and vectors
     LINALG::SymmetricMatrix matrix(0);
