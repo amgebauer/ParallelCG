@@ -34,7 +34,7 @@ namespace NUMPY {
 
         static void writeHeader(std::ostream& oStream, std::vector<unsigned long>& shape);
         static void readHeader(std::istream& fileStream, std::vector<unsigned long>& shape);
-        static void parseHeaderString(std::string header, std::vector<unsigned long>& shape);
+        static void parseHeaderString(std::string& header, std::vector<unsigned long>& shape);
 
         static int getHeaderLength(std::vector<unsigned long>& shape);
 

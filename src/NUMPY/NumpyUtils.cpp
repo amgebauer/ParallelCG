@@ -73,6 +73,10 @@ void NUMPY::NumpyUtils::readHeader(std::istream &fileStream, std::vector<unsigne
         throw NUMPY::NumpyIOException();
     }
 
+    if(majorVersion != 1) {
+        throw NUMPY::NumpyIOException();
+    }
+
 
     const short int headerLength = reinterpret_cast<short int &>(buffer[8]);
 
@@ -212,6 +216,9 @@ int NUMPY::NumpyUtils::readHeaderParallel(MPI_File &file, std::vector<unsigned l
         throw NUMPY::NumpyIOException();
     }
 
+    if(majorVersion != 1) {
+        throw NUMPY::NumpyIOException();
+    }
 
     const short int headerLength = reinterpret_cast<short int &>(buffer[8]);
 
@@ -378,7 +385,7 @@ NUMPY::NumpyUtils::writeDistributedVector(std::string fileName, LINALG::Distribu
     }
 }
 
-void NUMPY::NumpyUtils::parseHeaderString(std::string header, std::vector<unsigned long> &shape) {
+void NUMPY::NumpyUtils::parseHeaderString(std::string& header, std::vector<unsigned long> &shape) {
 
 
     std::string descr;
@@ -402,10 +409,9 @@ void NUMPY::NumpyUtils::parseHeaderString(std::string header, std::vector<unsign
     // parse shape
     try {
 
-        unsigned long currentPosition = 0;
         unsigned long lastPosition = 0;
         while(true) {
-            currentPosition = shapeStr.find(',', lastPosition);
+            unsigned long currentPosition = shapeStr.find(',', lastPosition);
             if(currentPosition == std::string::npos) {
                 currentPosition = shapeStr.length();
             }
