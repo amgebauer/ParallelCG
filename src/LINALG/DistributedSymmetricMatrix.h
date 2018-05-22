@@ -14,9 +14,9 @@ namespace LINALG {
 
     private:
         std::vector<double> values;
-        const unsigned long globalSize;
-        const unsigned long startRow;
-        const unsigned long localSize;
+        unsigned long globalSize;
+        unsigned long startRow;
+        unsigned long localSize;
 
         unsigned long getLocalIndex(unsigned long i, unsigned long j) const;
 
@@ -24,6 +24,8 @@ namespace LINALG {
         explicit DistributedSymmetricMatrix(unsigned long size,
                                             unsigned long startRow,
                                             unsigned long localSize);
+
+        void resize(unsigned long size, unsigned long startRow, unsigned long localSize);
 
         double &operator() (unsigned long i, unsigned long j);
         const double& get(unsigned long i, unsigned long j) const;

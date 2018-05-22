@@ -23,6 +23,8 @@ namespace MPI {
 
         static MPI::MpiInfo Init(int* argc, char*** argv);
         static MPI::MpiInfo Create();
+        static MPI::MpiInfo CreateFake(int rank, int rankSize);
+        void getLocalProblemDims(unsigned long N, unsigned long& startRow, unsigned long& localSize) const;
     };
 
 }

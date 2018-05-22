@@ -65,3 +65,10 @@ LINALG::DistributedVector LINALG::DistributedSymmetricMatrix::operator*(const LI
     return result;
 }
 
+void LINALG::DistributedSymmetricMatrix::resize(unsigned long size, unsigned long startRow, unsigned long localSize) {
+    values.resize(size*localSize, 0.0);
+    this->startRow = startRow;
+    this->localSize = localSize;
+    this->globalSize = size;
+}
+

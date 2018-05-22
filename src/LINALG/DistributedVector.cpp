@@ -163,3 +163,10 @@ double LINALG::DistributedVector::distributedNormSquared() const {
     return this->distributedProduct(*this);
 }
 
+void LINALG::DistributedVector::resize(unsigned long globalSize, unsigned long startRow, unsigned long localSize) {
+    values.resize(localSize, 0.0);
+    this->globalSize = globalSize;
+    this->localSize = localSize;
+    this->startRow = startRow;
+}
+

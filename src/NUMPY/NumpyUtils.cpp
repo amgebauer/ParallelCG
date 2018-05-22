@@ -7,6 +7,7 @@
 #include "NumpyIOException.h"
 #include <string.h>
 #include <stdexcept>
+#include <sstream>
 
 void NUMPY::NumpyUtils::readFullVector(std::string fileName, LINALG::Vector &vector) {
     std::vector<unsigned long> shape(0);
@@ -213,4 +214,75 @@ void NUMPY::NumpyUtils::writeHeader(std::ostream &oStream, std::vector<unsigned 
     oStream.put(headerLength >> 8);
 #pragma clang diagnostic pop
     oStream<<header;
+}
+
+int NUMPY::NumpyUtils::getHeaderLength(std::vector<unsigned long> &shape) {
+    std::ostringstream full_header;
+    writeHeader(full_header, shape);
+    std::string full_header_str = full_header.str();
+
+    return static_cast<int>(full_header_str.length());
+}
+
+int NUMPY::NumpyUtils::writeHeaderParallel(MPI_File &file, std::vector<unsigned long> &shape, MPI_Status &status) {
+    std::ostringstream full_header;
+    writeHeader(full_header, shape);
+    std::string full_header_str = full_header.str();
+
+    int header_offset = static_cast<int>(full_header_str.length());
+    MPI_File_write_at(file, 0, full_header_str.data(), header_offset, MPI_CHAR, &status);
+    return header_offset;
+}
+
+void NUMPY::NumpyUtils::readDistributedVector(std::string fileName, LINALG::DistributedVector &vector,
+                                              MPI::MpiInfo &mpiInfo) {
+    throw NUMPY::NumpyIOException();
+}
+
+void NUMPY::NumpyUtils::readDistributedSymmetricMatrix(std::string fileName, LINALG::DistributedSymmetricMatrix &matrix,
+                                                       MPI::MpiInfo &mpiInfo) {
+    throw NUMPY::NumpyIOException();
+}
+
+void
+NUMPY::NumpyUtils::writeDistributedVector(std::string fileName, LINALG::DistributedVector &vector, MPI::MpiInfo info) {
+
+
+    std::vector<unsigned long> shape(1);
+    shape[0] = vector.getSize();
+
+    int header_offset = getHeaderLength(shape);
+
+    MPI_File file;
+    MPI_Status status;
+
+    // opening a file in write and create mode
+    MPI_File_open(MPI_COMM_WORLD, fileName.c_str(),
+                  MPI_MODE_WRONLY | MPI_MODE_CREATE,
+                  MPI_INFO_NULL, &file);
+    // defining the size of the file
+    MPI_File_set_size(file, header_offset+sizeof(double)*vector.getSize());
+
+    if (info.getRank() == 0) {
+        // write header
+        writeHeaderParallel(file, shape, status);
+    }
+
+    // open the corresponding view of the output file
+    int my_offset = static_cast<int>(header_offset + vector.getStartRow() * sizeof(double));
+    MPI_File_set_view(file, my_offset, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL);
+
+    // write file
+    int my_size = static_cast<int>(vector.getLocalSize() * sizeof(double));
+    char data[vector.getLocalSize() * sizeof(double)];
+
+    unsigned long startRow = vector.getStartRow();
+    unsigned long lastRow = startRow+vector.getLocalSize();
+    for (unsigned long i=startRow;i<lastRow;++i) {
+        double num = vector(i);
+        memcpy(data+(i-startRow)* sizeof(double), &num, sizeof(double));
+    }
+
+    MPI_File_write(file, data, my_size, MPI_CHAR, &status);
+    MPI_File_close(&file);
 }

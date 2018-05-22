@@ -4,6 +4,7 @@
 
 #include "MpiInfo.h"
 #include <mpi.h>
+#include <algorithm>
 
 MPI::MpiInfo::MpiInfo(const int rank, const int size)
 : rank(rank), size(size){}
@@ -33,4 +34,20 @@ MPI::MpiInfo MPI::MpiInfo::Create() {
 
 bool MPI::MpiInfo::finalize() const {
     return MPI_Finalize() == MPI_SUCCESS;
+}
+
+MPI::MpiInfo MPI::MpiInfo::CreateFake(int rank, int rankSize) {
+    return MPI::MpiInfo(rank, rankSize);
+}
+
+void MPI::MpiInfo::getLocalProblemDims(unsigned long N, unsigned long &startRow, unsigned long &localSize) const {
+    int overSizedProcs = static_cast<int>(N % size);
+    localSize = N / size;
+
+
+    if(rank < overSizedProcs) {
+        ++localSize;
+    }
+
+    startRow = getRank()*localSize+std::min(rank, overSizedProcs);
 }

@@ -82,3 +82,19 @@ TEST(NumpyTests, FullMatrixFailTest) {
     , NUMPY::NumpyIOException
     );
 }
+
+TEST(NumpyTests, WriteDistributedVectorTest) {
+    unsigned long size = 1000, startRow, localSize;
+
+    MPI::MpiInfo info = MPI::MpiInfo::Create();
+    info.getLocalProblemDims(size, startRow, localSize);
+
+
+    LINALG::DistributedVector vector(size, startRow, localSize);
+
+    for(unsigned long i=startRow;i<startRow+localSize;++i) {
+        vector(i) = i;
+    }
+
+    NUMPY::NumpyUtils::writeDistributedVector("test/data/testarroutparallel.npy", vector, info);
+}

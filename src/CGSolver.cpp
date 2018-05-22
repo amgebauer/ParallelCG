@@ -45,7 +45,11 @@ void SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &ma
 
     double epsilonSquared = pow(epsilon, 2.0);
 
-    LINALG::DistributedVector r = vector-matrix*x_0;
+    LINALG::DistributedVector r = vector;
+    if(x_0.getSize() > 0) {
+        r.sub(matrix*x_0);
+    }
+
     LINALG::DistributedVector p = r;
 
     double r_squared = r.distributedProduct(r);

@@ -14,9 +14,9 @@ namespace LINALG {
     class DistributedVector {
 
     private:
-        const unsigned long globalSize;
-        const unsigned long startRow;
-        const unsigned long localSize;
+        unsigned long globalSize;
+        unsigned long startRow;
+        unsigned long localSize;
         std::vector<double> values;
 
     public:
@@ -27,6 +27,8 @@ namespace LINALG {
         unsigned long getSize() const;
         unsigned long getStartRow() const;
         unsigned long getLocalSize() const;
+
+        void resize(unsigned long globalSize, unsigned long startRow, unsigned long localSize);
 
         double& operator() (unsigned long i);
         DistributedVector operator+(const DistributedVector& vector) const;
