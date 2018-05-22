@@ -98,3 +98,37 @@ TEST(NumpyTests, WriteDistributedVectorTest) {
 
     NUMPY::NumpyUtils::writeDistributedVector("test/data/testarroutparallel.npy", vector, info);
 }
+
+TEST(NumpyTests, ReadDistributedVectorTest) {
+    LINALG::DistributedVector vector(0, 0, 0);
+
+
+    MPI::MpiInfo info = MPI::MpiInfo::Create();
+
+    NUMPY::NumpyUtils::readDistributedVector("test/data/testarr.npy", vector, info);
+
+    ASSERT_EQ(1000, vector.getSize());
+
+    unsigned long endRow = vector.getStartRow()+vector.getLocalSize();
+    for(unsigned long i=vector.getStartRow();i<endRow;i++) {
+        ASSERT_FLOAT_EQ(i, vector(i));
+    }
+
+}
+
+TEST(NumpyTests, ReadDistributedMatrixTest) {
+    LINALG::DistributedSymmetricMatrix matrix(0, 0, 0);
+
+    MPI::MpiInfo info = MPI::MpiInfo::Create();
+
+    NUMPY::NumpyUtils::readDistributedSymmetricMatrix("test/data/testmat.npy", matrix, info);
+    ASSERT_EQ(100, matrix.getGlobalSize());
+
+
+    for(unsigned long i=matrix.getLocalStartRow();i<matrix.getLocalStartRow()+matrix.getLocalSize();i++) {
+        for (unsigned long j=0;j<100;++j) {
+            ASSERT_FLOAT_EQ(i+j, matrix(i, j));
+        }
+    }
+
+}

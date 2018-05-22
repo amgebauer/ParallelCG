@@ -83,50 +83,7 @@ void NUMPY::NumpyUtils::readHeader(std::istream &fileStream, std::vector<unsigne
         throw NUMPY::NumpyIOException();
     }
 
-    std::string descr;
-    readJsonOption(header, "descr", descr);
-
-    // accept only double arrays
-    if(descr != "<f8") {
-        throw NUMPY::NumpyIOException();
-    }
-
-    std::string fortranOrder;
-    readJsonOption(header, "fortran_order", fortranOrder);
-    // accept only non-fortran arrays
-    if(fortranOrder != "False") {
-        throw NUMPY::NumpyIOException();
-    }
-
-    std::string shapeStr;
-    readJsonOption(header, "shape", shapeStr);
-
-    // parse shape
-    try {
-
-        unsigned long currentPosition = 0;
-        unsigned long lastPosition = 0;
-        while(true) {
-            currentPosition = shapeStr.find(',', lastPosition);
-            if(currentPosition == std::string::npos) {
-                currentPosition = shapeStr.length();
-            }
-
-            if(currentPosition <= lastPosition) {
-                break;
-            } else {
-                unsigned long test = std::stoul(shapeStr.substr(lastPosition, currentPosition-lastPosition));
-                shape.push_back(test);
-            }
-
-            lastPosition = currentPosition+1;
-        }
-
-    } catch (std::invalid_argument&) {
-        throw NUMPY::NumpyIOException();
-    } catch (std::out_of_range&) {
-        throw NUMPY::NumpyIOException();
-    }
+    parseHeaderString(header, shape);
 }
 
 void NUMPY::NumpyUtils::readJsonOption(const std::string &json, const std::string &option, std::string &name) {
@@ -230,18 +187,142 @@ int NUMPY::NumpyUtils::writeHeaderParallel(MPI_File &file, std::vector<unsigned 
     std::string full_header_str = full_header.str();
 
     int header_offset = static_cast<int>(full_header_str.length());
-    MPI_File_write_at(file, 0, full_header_str.data(), header_offset, MPI_CHAR, &status);
+    if(MPI_File_write_at(file, 0, full_header_str.data(), header_offset, MPI_CHAR, &status) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
     return header_offset;
+}
+
+
+int NUMPY::NumpyUtils::readHeaderParallel(MPI_File &file, std::vector<unsigned long> &shape, MPI_Status &status) {
+
+    char buffer[10];
+
+    // read numpy magic string, file version and header length
+    if (MPI_File_read_at(file, 0, buffer, 10, MPI_CHAR, &status) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    unsigned char majorVersion = reinterpret_cast<unsigned char &>(buffer[6]);
+    buffer[7] = '\0';
+
+    // check magic string
+    if(strcmp(buffer+1, "NUMPY") == 0) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    const short int headerLength = reinterpret_cast<short int &>(buffer[8]);
+
+    // read header string
+    char header_buf[headerLength];
+    if (MPI_File_read_at(file, 10, header_buf, headerLength, MPI_CHAR, &status) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    std::string header(header_buf);
+    parseHeaderString(header, shape);
+    return headerLength+10;
 }
 
 void NUMPY::NumpyUtils::readDistributedVector(std::string fileName, LINALG::DistributedVector &vector,
                                               MPI::MpiInfo &mpiInfo) {
-    throw NUMPY::NumpyIOException();
+    std::vector<unsigned long> shape;
+
+
+    // open file
+    MPI_File file;
+    MPI_Status status;
+
+    MPI_File_open(MPI_COMM_WORLD, fileName.c_str(),
+                  MPI_MODE_RDONLY,
+                  MPI_INFO_NULL, &file);
+
+
+    int header_offset = readHeaderParallel(file, shape, status);
+
+
+    if(shape.size() != 1 || shape[0] <= 0) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    unsigned long startRow, localSize;
+
+    mpiInfo.getLocalProblemDims(shape[0], startRow, localSize);
+    vector.resize(shape[0], startRow, localSize);
+
+
+    // open the corresponding view of the output file
+    int my_offset = static_cast<int>(header_offset + vector.getStartRow() * sizeof(double));
+    if(MPI_File_set_view(file, my_offset, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    // read my values of the vector
+    char buffer[sizeof(double)*localSize];
+    if(MPI_File_read(file, buffer, sizeof(double)*localSize, MPI_CHAR, &status) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+
+    for (unsigned long i=startRow;i<startRow+localSize;++i) {
+        char chararr[sizeof(double)];
+        memcpy(chararr, buffer+sizeof(double)*(i-startRow), sizeof(double));
+        vector(i) = reinterpret_cast<double&>(chararr);
+    }
+
 }
 
 void NUMPY::NumpyUtils::readDistributedSymmetricMatrix(std::string fileName, LINALG::DistributedSymmetricMatrix &matrix,
                                                        MPI::MpiInfo &mpiInfo) {
-    throw NUMPY::NumpyIOException();
+    std::vector<unsigned long> shape;
+    // open file
+    MPI_File file;
+    MPI_Status status;
+
+    MPI_File_open(MPI_COMM_WORLD, fileName.c_str(),
+                  MPI_MODE_RDONLY,
+                  MPI_INFO_NULL, &file);
+
+
+    int header_offset = readHeaderParallel(file, shape, status);
+
+
+    if(shape.size() != 2 || shape[0] <= 0 || shape[1] != shape[0]) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    unsigned long startRow, localSize;
+
+    mpiInfo.getLocalProblemDims(shape[0], startRow, localSize);
+    matrix.resize(shape[0], startRow, localSize);
+
+
+    // open the corresponding view of the output file
+    int my_offset = static_cast<int>(header_offset + startRow*shape[0]* sizeof(double));
+    if(MPI_File_set_view(file, my_offset, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+
+
+    // read my values of the vector
+    char buffer[sizeof(double)*localSize*shape[0]];
+    if(MPI_File_read(file, buffer, sizeof(double)*localSize*shape[0], MPI_CHAR, &status) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+
+    for (unsigned long i=startRow;i<startRow+localSize;++i) {
+        for (unsigned long j=0;j<shape[0];++j) {
+            char chararr[sizeof(double)];
+            memcpy(chararr, buffer+sizeof(double)*((i-startRow)*shape[0]+j), sizeof(double));
+            matrix(i,j) = reinterpret_cast<double&>(chararr);
+        }
+
+    }
 }
 
 void
@@ -257,11 +338,15 @@ NUMPY::NumpyUtils::writeDistributedVector(std::string fileName, LINALG::Distribu
     MPI_Status status;
 
     // opening a file in write and create mode
-    MPI_File_open(MPI_COMM_WORLD, fileName.c_str(),
+    if(MPI_File_open(MPI_COMM_WORLD, fileName.c_str(),
                   MPI_MODE_WRONLY | MPI_MODE_CREATE,
-                  MPI_INFO_NULL, &file);
+                  MPI_INFO_NULL, &file) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
     // defining the size of the file
-    MPI_File_set_size(file, header_offset+sizeof(double)*vector.getSize());
+    if(MPI_File_set_size(file, header_offset+sizeof(double)*vector.getSize()) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
 
     if (info.getRank() == 0) {
         // write header
@@ -270,7 +355,9 @@ NUMPY::NumpyUtils::writeDistributedVector(std::string fileName, LINALG::Distribu
 
     // open the corresponding view of the output file
     int my_offset = static_cast<int>(header_offset + vector.getStartRow() * sizeof(double));
-    MPI_File_set_view(file, my_offset, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL);
+    if(MPI_File_set_view(file, my_offset, MPI_CHAR, MPI_CHAR, "native", MPI_INFO_NULL) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
 
     // write file
     int my_size = static_cast<int>(vector.getLocalSize() * sizeof(double));
@@ -283,6 +370,59 @@ NUMPY::NumpyUtils::writeDistributedVector(std::string fileName, LINALG::Distribu
         memcpy(data+(i-startRow)* sizeof(double), &num, sizeof(double));
     }
 
-    MPI_File_write(file, data, my_size, MPI_CHAR, &status);
-    MPI_File_close(&file);
+    if(MPI_File_write(file, data, my_size, MPI_CHAR, &status) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+    if(MPI_File_close(&file) != MPI_SUCCESS) {
+        throw NUMPY::NumpyIOException();
+    }
+}
+
+void NUMPY::NumpyUtils::parseHeaderString(std::string header, std::vector<unsigned long> &shape) {
+
+
+    std::string descr;
+    readJsonOption(header, "descr", descr);
+
+    // accept only double arrays
+    if(descr != "<f8") {
+        throw NUMPY::NumpyIOException();
+    }
+
+    std::string fortranOrder;
+    readJsonOption(header, "fortran_order", fortranOrder);
+    // accept only non-fortran arrays
+    if(fortranOrder != "False") {
+        throw NUMPY::NumpyIOException();
+    }
+
+    std::string shapeStr;
+    readJsonOption(header, "shape", shapeStr);
+
+    // parse shape
+    try {
+
+        unsigned long currentPosition = 0;
+        unsigned long lastPosition = 0;
+        while(true) {
+            currentPosition = shapeStr.find(',', lastPosition);
+            if(currentPosition == std::string::npos) {
+                currentPosition = shapeStr.length();
+            }
+
+            if(currentPosition <= lastPosition) {
+                break;
+            } else {
+                unsigned long test = std::stoul(shapeStr.substr(lastPosition, currentPosition-lastPosition));
+                shape.push_back(test);
+            }
+
+            lastPosition = currentPosition+1;
+        }
+
+    } catch (std::invalid_argument&) {
+        throw NUMPY::NumpyIOException();
+    } catch (std::out_of_range&) {
+        throw NUMPY::NumpyIOException();
+    }
 }
