@@ -50,8 +50,8 @@ script:
   - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
 
   # show usage
-  - mpirun -np 2 ./build/CGMethod
-  - ./build/CGMethod
+  - mpirun -np 2 ./build/CGMethod || true
+  - ./build/CGMethod || true
 
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*" -E ".*gtest.*"
