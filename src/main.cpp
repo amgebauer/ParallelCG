@@ -89,6 +89,7 @@ int execute_serial_problem(int argc, char* argv[0]) {
         NUMPY::NumpyUtils::writeFullVector(solution_file, solution);
         std::cout<<"Solution written to outfile!"<< std::endl;
     }
+    return 0;
 }
 
 int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
