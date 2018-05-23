@@ -49,6 +49,10 @@ script:
   - python ./test/testCGSolver.py
   - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
 
+  # show usage
+  - mpirun -np 2 ./build/CGMethod
+  - ./build/CGMethod
+
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*" -E ".*gtest.*"
 
