@@ -22,6 +22,32 @@ script:
   - mpirun -np 2 ./build/CGMethodTest
   - mpirun -np 4 ./build/CGMethodTest
   - python ./test/testNumpyO.py
+  # test serial version
+  - ./build/CGMethod -N 1000
+
+  # generate problem, solve it, and check solution
+  - python ./test/generateMatrixVector.py
+  - ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./test/testCGSolver.py
+  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+
+  # generate problem, solve it, and check solution
+  - python ./test/generateMatrixVector.py
+  - mpirun -np 2 ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./test/testCGSolver.py
+  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+
+  # generate problem, solve it, and check solution
+  - python ./test/generateMatrixVector.py
+  - mpirun -np 3 ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./test/testCGSolver.py
+  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+
+  # generate problem, solve it, and check solution
+  - python ./test/generateMatrixVector.py
+  - mpirun -np 4 ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./test/testCGSolver.py
+  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
 
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*" -E ".*gtest.*"

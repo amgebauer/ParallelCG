@@ -135,7 +135,7 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
         }
 
     } else {
-        usage_serial(argv[0]);
+        usage_parallel(argv[0], info);
         return 1;
     }
 
@@ -160,6 +160,7 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
             std::cout<<"Solution written to outfile!"<< std::endl;
         }
     }
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
