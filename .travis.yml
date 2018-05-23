@@ -26,28 +26,28 @@ script:
   - ./build/CGMethod -N 1000
 
   # generate problem, solve it, and check solution
-  - python ./test/generateMatrixVector.py
-  - ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
-  - python ./test/testCGSolver.py
-  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - ./build/CGMethod mat.npy vec.npy sol.npy
+  - python ./test/validate.py -A mat.npy -v vec.npy -x sol.npy
+  - rm mat.npy vec.npy sol.npy
 
   # generate problem, solve it, and check solution
-  - python ./test/generateMatrixVector.py
-  - mpirun -np 2 ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
-  - python ./test/testCGSolver.py
-  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - mpirun -np 2 ./build/CGMethod mat.npy vec.npy sol.npy
+  - python ./test/validate.py -A mat.npy -v vec.npy -x sol.npy
+  - rm mat.npy vec.npy sol.npy
 
   # generate problem, solve it, and check solution
-  - python ./test/generateMatrixVector.py
-  - mpirun -np 3 ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
-  - python ./test/testCGSolver.py
-  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - mpirun -np 3 ./build/CGMethod mat.npy vec.npy sol.npy
+  - python ./test/validate.py -A mat.npy -v vec.npy -x sol.npy
+  - rm mat.npy vec.npy sol.npy
 
   # generate problem, solve it, and check solution
-  - python ./test/generateMatrixVector.py
-  - mpirun -np 4 ./build/CGMethod test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
-  - python ./test/testCGSolver.py
-  - rm test/data/genmatrix.npy test/data/genvector.npy test/data/gensolution.npy
+  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - mpirun -np 4 ./build/CGMethod mat.npy vec.npy sol.npy
+  - python ./test/validate.py -A mat.npy -v vec.npy -x sol.npy
+  - rm mat.npy vec.npy sol.npy
 
   # show usage
   - mpirun -np 2 ./build/CGMethod || true
