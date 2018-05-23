@@ -187,7 +187,7 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
 
     if (info.getRank() == 0) {
         clock_t finish = clock();
-        print_statistics(solution.getSize(), 1, begin, init, solve, finish);
+        print_statistics(solution.getSize(), info.getSize(), begin, init, solve, finish);
     }
     return 0;
 }
