@@ -2,6 +2,7 @@
 #include "LINALG/SymmetricMatrix.h"
 #include "CGSolver.h"
 #include "NUMPY/NumpyUtils.h"
+#include <ctime>
 
 
 void usage_serial(const std::string &program_name) {
@@ -32,9 +33,20 @@ void usage_parallel(const std::string &program_name, MPI::MpiInfo info) {
     }
 }
 
+void print_statistics(unsigned long problem_size, int rank_size, clock_t begin, clock_t inited, clock_t solved, clock_t finish) {
+    std::cout<<"Statistics:"<<std::endl;
+    std::cout<<"Problem size: "<<problem_size<<std::endl;
+    std::cout<<"Number Processes: "<<rank_size<<std::endl;
+    std::cout<<"Problem size: "<<problem_size<<std::endl;
+    std::cout<<"Read Time: "<<(double)(inited-begin)/CLOCKS_PER_SEC<<" s"<<std::endl;
+    std::cout<<"Solve Time: "<<(double)(solved-inited)/CLOCKS_PER_SEC<<" s"<<std::endl;
+    std::cout<<"Write Time: "<<(double)(finish-solved)/CLOCKS_PER_SEC<<" s"<<std::endl;
+}
+
 int execute_serial_problem(int argc, char* argv[0]) {
     std::string solution_file;
 
+    clock_t begin = clock();
     // create matrix and vectors
     LINALG::SymmetricMatrix matrix(0);
     LINALG::Vector vector(0), solution(0);
@@ -75,6 +87,8 @@ int execute_serial_problem(int argc, char* argv[0]) {
         return 1;
     }
 
+    clock_t init = clock();
+
 
     std::cout<<"Data initialized"<<std::endl;
     std::cout<<"Solve Ax=b"<<std::endl;
@@ -84,17 +98,22 @@ int execute_serial_problem(int argc, char* argv[0]) {
 
     std::cout<<"Solution found!"<< std::endl;
 
+    clock_t solve = clock();
+
     // Store solution
     if(argc == 4) {
         NUMPY::NumpyUtils::writeFullVector(solution_file, solution);
         std::cout<<"Solution written to outfile!"<< std::endl;
     }
+
+    clock_t finish = clock();
+    print_statistics(solution.getSize(), 1, begin, init, solve, finish);
     return 0;
 }
 
 int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
     std::string solution_file;
-
+    clock_t begin = clock();
     // create matrix and vectors
     LINALG::DistributedSymmetricMatrix matrix(0, 0, 0);
     LINALG::DistributedVector vector(0, 0, 0), solution(0, 0, 0);
@@ -140,6 +159,8 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
         return 1;
     }
 
+    clock_t init = clock();
+
     if (info.getRank() == 0) {
         std::cout<<"Data initialized"<<std::endl;
         std::cout<<"Solve Ax=b"<<std::endl;
@@ -153,6 +174,7 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
         std::cout << "Solution found!" << std::endl;
     }
 
+    clock_t solve = clock();
     // Store solution
     if(argc == 4) {
         NUMPY::NumpyUtils::writeDistributedVector(solution_file, solution, info);
@@ -160,6 +182,12 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
         if (info.getRank() == 0) {
             std::cout<<"Solution written to outfile!"<< std::endl;
         }
+    }
+
+
+    if (info.getRank() == 0) {
+        clock_t finish = clock();
+        print_statistics(solution.getSize(), 1, begin, init, solve, finish);
     }
     return 0;
 }
