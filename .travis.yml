@@ -23,28 +23,28 @@ script:
   - mpirun -np 4 ./build/CGMethodTest
   - python ./test/testNumpyO.py
   # test serial version
-  - ./build/CGMethod -N 1000
+  - ./build/CGMethod -N 100
 
   # generate problem, solve it, and check solution
-  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - python ./generate.py -N 100 -A mat.npy -v vec.npy
   - ./build/CGMethod mat.npy vec.npy sol.npy
   - python ./validate.py -A mat.npy -v vec.npy -x sol.npy
   - rm mat.npy vec.npy sol.npy
 
   # generate problem, solve it, and check solution
-  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - python ./generate.py -N 100 -A mat.npy -v vec.npy
   - mpirun -np 2 ./build/CGMethod mat.npy vec.npy sol.npy
   - python ./validate.py -A mat.npy -v vec.npy -x sol.npy
   - rm mat.npy vec.npy sol.npy
 
   # generate problem, solve it, and check solution
-  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - python ./generate.py -N 100 -A mat.npy -v vec.npy
   - mpirun -np 3 ./build/CGMethod mat.npy vec.npy sol.npy
   - python ./validate.py -A mat.npy -v vec.npy -x sol.npy
   - rm mat.npy vec.npy sol.npy
 
   # generate problem, solve it, and check solution
-  - python ./generate.py -N 1000 -A mat.npy -v vec.npy
+  - python ./generate.py -N 100 -A mat.npy -v vec.npy
   - mpirun -np 4 ./build/CGMethod mat.npy vec.npy sol.npy
   - python ./validate.py -A mat.npy -v vec.npy -x sol.npy
   - rm mat.npy vec.npy sol.npy
