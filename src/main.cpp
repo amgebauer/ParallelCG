@@ -38,9 +38,9 @@ void print_statistics(unsigned long problem_size, int rank_size, clock_t begin, 
     std::cout<<"Problem size: "<<problem_size<<std::endl;
     std::cout<<"Number Processes: "<<rank_size<<std::endl;
     std::cout<<"Problem size: "<<problem_size<<std::endl;
-    std::cout<<"Read Time: "<<(double)(inited-begin)/CLOCKS_PER_SEC<<" s"<<std::endl;
-    std::cout<<"Solve Time: "<<(double)(solved-inited)/CLOCKS_PER_SEC<<" s"<<std::endl;
-    std::cout<<"Write Time: "<<(double)(finish-solved)/CLOCKS_PER_SEC<<" s"<<std::endl;
+    std::cout<<"Read Time: "<<std::scientific<<(double)(inited-begin)/CLOCKS_PER_SEC<<" s"<<std::endl;
+    std::cout<<"Solve Time: "<<std::scientific<<(double)(solved-inited)/CLOCKS_PER_SEC<<" s"<<std::endl;
+    std::cout<<"Write Time: "<<std::scientific<<(double)(finish-solved)/CLOCKS_PER_SEC<<" s"<<std::endl;
 }
 
 int execute_serial_problem(int argc, char* argv[0]) {
