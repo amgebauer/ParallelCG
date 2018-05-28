@@ -11,7 +11,7 @@ void SOLVE::CGSolver::solveSerial(const LINALG::SymmetricMatrix &matrix,
                             LINALG::Vector &result,
                             const double epsilon) {
 
-    double epsilonSquared = pow(epsilon, 2);
+    double epsilonSquared = epsilon*epsilon;
 
     LINALG::Vector r = vector-matrix*result;
     LINALG::Vector p = r;
