@@ -3,33 +3,49 @@
 #include "CGSolver.h"
 #include "NUMPY/NumpyUtils.h"
 #include <ctime>
+#include <limits>
 
+struct InvokationInfo {
+    std::string executionName;
+    std::string matrixFileName;
+    std::string vectorFileName;
+    std::string solutionFileName;
+    double epsilon;
+    unsigned long max_iter;
+    unsigned long problem_size;
+};
 
 void usage_serial(const std::string &program_name) {
     std::cout<<"There are two ways to call the programm"<<std::endl<<std::endl;
     std::cout<<"Problem from NumPy file:"<<std::endl<<std::endl;
-    std::cout<<program_name<<" <A> <b> <x>"<<std::endl<<std::endl;
+    std::cout<<program_name<<" -M <M> -v <v> -x <x>"<<std::endl<<std::endl;
     std::cout<<"   <A>: Path to numpy matrix file"<<std::endl;
-    std::cout<<"   <b>: Path to numpy vector file"<<std::endl;
+    std::cout<<"   <v>: Path to numpy vector file"<<std::endl;
     std::cout<<"   <x>: Path to numpy file where the result will be stored"<<std::endl<<std::endl;
     std::cout<<"Dummy Problem with specigic size:"<<std::endl<<std::endl;
     std::cout<<program_name<<" -N <N>"<<std::endl<<std::endl;
-    std::cout<<"   <N>: Size of the problem"<<std::endl;
+    std::cout<<"   <N>: Size of the problem"<<std::endl<<std::endl;
+    std::cout<<"Additionally you can add the following optional parameters"<<std::endl<<std::endl;
+    std::cout<<"   -e <eps>: Used criterion to stop the CG method"<<std::endl;
+    std::cout<<"   -m <max_iter>: Maximum iterations"<<std::endl;
 }
 
 void usage_parallel(const std::string &program_name, MPI::MpiInfo info) {
     if(info.getRank() == 0) {
         std::cout<<"There are two ways to call the programm"<<std::endl<<std::endl;
         std::cout<<"Problem from NumPy file:"<<std::endl<<std::endl;
-        std::cout<<"mpirun -n <X> "<<program_name<<" <A> <b> <x>"<<std::endl<<std::endl;
+        std::cout<<"mpirun -n <X> "<<program_name<<" -M <A> -v <v> -x <x>"<<std::endl<<std::endl;
         std::cout<<"   <X>: Number of processes"<<std::endl;
-        std::cout<<"   <b>: Path to numpy vector file"<<std::endl;
+        std::cout<<"   <v>: Path to numpy vector file"<<std::endl;
         std::cout<<"   <A>: Path to numpy matrix file"<<std::endl;
         std::cout<<"   <x>: Path to numpy file where the result will be stored"<<std::endl<<std::endl;
         std::cout<<"Dummy Problem with specigic size:"<<std::endl<<std::endl;
         std::cout<<program_name<<" -N <N>"<<std::endl<<std::endl;
         std::cout<<"   <X>: Number of processes"<<std::endl;
-        std::cout<<"   <N>: Size of the problem"<<std::endl;
+        std::cout<<"   <N>: Size of the problem"<<std::endl<<std::endl;
+        std::cout<<"Additionally you can add the following optional parameters"<<std::endl<<std::endl;
+        std::cout<<"   -e <eps>: Used criterion to stop the CG method"<<std::endl;
+        std::cout<<"   -m <max_iter>: Maximum iterations"<<std::endl;
     }
 }
 
@@ -47,31 +63,61 @@ void print_statistics(unsigned long problem_size, int rank_size, clock_t begin, 
     std::cout<<"Write Time: "<<std::scientific<<(double)(finish-solved)/CLOCKS_PER_SEC<<" s"<<std::endl;
 }
 
-int execute_serial_problem(int argc, char* argv[0]) {
+struct InvokationInfo parse_arguments(int argc, char* argv[]) {
+    struct InvokationInfo info;
+    info.epsilon = 1e-5;
+    info.max_iter = std::numeric_limits<unsigned long>::max();
+    info.executionName = argv[0];
+
+    for (int i=2;i<argc;i+=2) {
+
+        if(argv[i-1] == std::string("-N")) {
+            info.problem_size = std::stoul(argv[i]);
+        } else if(argv[i-1] == std::string("-e")) {
+            info.epsilon = std::stod(argv[i]);
+        } else if(argv[i-1] == std::string("-m")) {
+            info.max_iter = std::stoul(argv[i]);
+        } else if(argv[i-1] == std::string("-M")) {
+            info.matrixFileName = argv[i];
+        } else if(argv[i-1] == std::string("-v")) {
+            info.vectorFileName = argv[i];
+        } else if(argv[i-1] == std::string("-x")) {
+            info.solutionFileName = argv[i];
+        }
+
+    }
+
+
+    return info;
+}
+
+int execute_serial_problem(struct InvokationInfo invokationInfo) {
     std::string solution_file;
 
     clock_t begin = clock();
     // create matrix and vectors
     LINALG::SymmetricMatrix matrix(0);
     LINALG::Vector vector(0), solution(0);
-    if(argc == 4) {
-        // program is started with 3 arguments, so the input and output files are specified in numpy format
 
-        std::string matrix_file = argv[1];
-        std::string rhs_file = argv[2];
-        solution_file = argv[3];
+    bool useNumpy = false;
+
+    if(!invokationInfo.matrixFileName.empty()
+       && !invokationInfo.vectorFileName.empty()
+       && !invokationInfo.solutionFileName.empty()) {
+        // program is started with paths to numpy files
+        useNumpy = true;
 
         // read matrix
-        NUMPY::NumpyUtils::readFullSymmetricMatrix(matrix_file, matrix);
+        NUMPY::NumpyUtils::readFullSymmetricMatrix(invokationInfo.matrixFileName, matrix);
 
         // read vector
-        NUMPY::NumpyUtils::readFullVector(rhs_file, vector);
+        NUMPY::NumpyUtils::readFullVector(invokationInfo.vectorFileName, vector);
 
         // resize solution vector
         solution.resize(vector.getSize());
-    } else if(argc == 3) {
+    } else if(invokationInfo.problem_size > 0) {
         // the program is started with 2 argmuents, so the size of the dummy problem is specified
-        unsigned long problem_size = std::stoul(argv[2]);
+        unsigned long problem_size = invokationInfo.problem_size;
         matrix.resize(problem_size);
         vector.resize(problem_size);
         solution.resize(problem_size);
@@ -87,7 +133,7 @@ int execute_serial_problem(int argc, char* argv[0]) {
         }
 
     } else {
-        usage_serial(argv[0]);
+        usage_serial(invokationInfo.executionName);
         return 1;
     }
 
@@ -98,15 +144,15 @@ int execute_serial_problem(int argc, char* argv[0]) {
     std::cout<<"Solve Ax=b"<<std::endl;
 
     // Solve
-    SOLVE::CGSolver::solveSerial(matrix, vector, solution, 1e-5);
+    SOLVE::CGSolver::solveSerial(matrix, vector, solution, invokationInfo.epsilon, invokationInfo.max_iter);
 
     std::cout<<"Solution found!"<< std::endl;
 
     clock_t solve = clock();
 
     // Store solution
-    if(argc == 4) {
-        NUMPY::NumpyUtils::writeFullVector(solution_file, solution);
+    if(useNumpy) {
+        NUMPY::NumpyUtils::writeFullVector(invokationInfo.solutionFileName, solution);
         std::cout<<"Solution written to outfile!"<< std::endl;
     }
 
@@ -115,37 +161,35 @@ int execute_serial_problem(int argc, char* argv[0]) {
     return 0;
 }
 
-int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
-    std::string solution_file;
+int execute_parallel_problem(struct InvokationInfo invokationInfo, MPI::MpiInfo& info) {
     clock_t begin = clock();
     // create matrix and vectors
     LINALG::DistributedSymmetricMatrix matrix(0, 0, 0);
     LINALG::DistributedVector vector(0, 0, 0), solution(0, 0, 0);
-    if(argc == 4) {
-        // program is started with 3 arguments, so the input and output files are specified in numpy format
-
-        std::string matrix_file = argv[1];
-        std::string rhs_file = argv[2];
-        solution_file = argv[3];
+    bool useNumpy = false;
+    if(!invokationInfo.matrixFileName.empty()
+       && !invokationInfo.vectorFileName.empty()
+       && !invokationInfo.solutionFileName.empty()) {
+        // program is started with paths to numpy files
+        useNumpy = true;
 
         // read matrix
-        NUMPY::NumpyUtils::readDistributedSymmetricMatrix(matrix_file, matrix, info);
+        NUMPY::NumpyUtils::readDistributedSymmetricMatrix(invokationInfo.matrixFileName, matrix, info);
 
         // read vector
-        NUMPY::NumpyUtils::readDistributedVector(rhs_file, vector, info);
+        NUMPY::NumpyUtils::readDistributedVector(invokationInfo.vectorFileName, vector, info);
 
         // resize solution vector
         unsigned long startRow, localSize;
         info.getLocalProblemDims(vector.getSize(), startRow, localSize);
         solution.resize(vector.getSize(), startRow, localSize);
-    } else if(argc == 3) {
+    } else if(invokationInfo.problem_size > 0) {
         // the program is started with 2 argmuents, so the size of the dummy problem is specified
-        unsigned long problem_size = std::stoul(argv[2]);
         unsigned long startRow, localSize;
         info.getLocalProblemDims(vector.getSize(), startRow, localSize);
-        matrix.resize(problem_size, startRow, localSize);
-        vector.resize(problem_size, startRow, localSize);
-        solution.resize(problem_size, startRow, localSize);
+        matrix.resize(invokationInfo.problem_size, startRow, localSize);
+        vector.resize(invokationInfo.problem_size, startRow, localSize);
+        solution.resize(invokationInfo.problem_size, startRow, localSize);
 
         // initialize with dummy problem
         unsigned long endIndex = matrix.getLocalStartRow()+matrix.getLocalSize();
@@ -153,13 +197,13 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
 
             for (unsigned long j=i;j<matrix.getGlobalSize();++j) {
                 matrix(i,j) = 10*i+j;
-                if(i == j) matrix(i,j) += problem_size;
+                if(i == j) matrix(i,j) += invokationInfo.problem_size;
             }
             vector(i) = i+1;
         }
 
     } else {
-        usage_parallel(argv[0], info);
+        usage_parallel(invokationInfo.executionName, info);
         return 1;
     }
 
@@ -172,7 +216,7 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
 
     // Solve
     LINALG::Vector x_0(0);
-    SOLVE::CGSolver::solveParallel(matrix, vector, solution, x_0, 1e-5, info);
+    SOLVE::CGSolver::solveParallel(matrix, vector, solution, x_0, 1e-5, invokationInfo.max_iter, info);
 
     if (info.getRank() == 0) {
         std::cout << "Solution found!" << std::endl;
@@ -180,8 +224,8 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
 
     clock_t solve = clock();
     // Store solution
-    if(argc == 4) {
-        NUMPY::NumpyUtils::writeDistributedVector(solution_file, solution, info);
+    if(useNumpy) {
+        NUMPY::NumpyUtils::writeDistributedVector(invokationInfo.solutionFileName, solution, info);
 
         if (info.getRank() == 0) {
             std::cout<<"Solution written to outfile!"<< std::endl;
@@ -199,12 +243,24 @@ int execute_parallel_problem(int argc, char* argv[0], MPI::MpiInfo& info) {
 int main(int argc, char* argv[]) {
     // init mpi
     MPI::MpiInfo info = MPI::MpiInfo::Init(&argc, &argv);
+    struct InvokationInfo invokationInfo;
+    try {
+        invokationInfo = parse_arguments(argc, argv);
+    } catch(...) {
+        if(info.getSize() > 1) {
+            usage_parallel(argv[0], info);
+        } else {
+            usage_serial(argv[0]);
+        }
+        return 1;
+    }
+
 
     int return_code;
     if(info.getSize() == 1) {
-        return_code = execute_serial_problem(argc, argv);
+        return_code = execute_serial_problem(invokationInfo);
     } else {
-        return_code = execute_parallel_problem(argc, argv, info);
+        return_code = execute_parallel_problem(invokationInfo, info);
     }
 
     info.finalize();

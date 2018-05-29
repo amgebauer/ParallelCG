@@ -19,12 +19,14 @@ namespace SOLVE {
         static void solveSerial(const LINALG::SymmetricMatrix& matrix,
                           const LINALG::Vector& vector,
                           LINALG::Vector& result,
-                          double epsilon);
+                          double epsilon,
+                          unsigned long max_iterations);
         static void solveParallel(const LINALG::DistributedSymmetricMatrix& matrix,
                           const LINALG::DistributedVector& vector,
                           LINALG::DistributedVector& result,
                           const LINALG::Vector& x_0,
                           double epsilon,
+                          unsigned long max_iterations,
                           MPI::MpiInfo& mpiInfo);
     };
 
