@@ -22,7 +22,7 @@ cd /scratch/gebauer/ParallelCG/run/{problem_name}
 
 # run for N={problem_size}
 python3 /scratch/gebauer/ParallelCG/generate.py -N {problem_size} -A mat.npy -v vec.npy
-srun /scratch/gebauer/ParallelCG/CGMethod -M mat.npy -v vec.npy -x sol.npy
+srun /scratch/gebauer/ParallelCG/CGMethod -A mat.npy -v vec.npy -x sol.npy
 python3 /scratch/gebauer/ParallelCG/validate.py -A mat.npy -v vec.npy -x sol.npy
 rm mat.npy vec.npy sol.npy
 
