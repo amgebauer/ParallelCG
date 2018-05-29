@@ -43,7 +43,8 @@ def generate_problem(name, number_agents, problem_size, use_reservation = False)
 
 def submit(name):
     # submits the problem
-    subprocess.call("sbatch {0}", shell=True)
+    my_dir = os.path.dirname(__file__)
+    subprocess.call("sbatch {0}".format(os.path.join(my_dir, '..', 'run_scripts', '{0}.sh'.format(name))), shell=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
