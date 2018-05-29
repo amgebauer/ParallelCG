@@ -18,7 +18,7 @@ struct InvokationInfo {
 void usage_serial(const std::string &program_name) {
     std::cout<<"There are two ways to call the programm"<<std::endl<<std::endl;
     std::cout<<"Problem from NumPy file:"<<std::endl<<std::endl;
-    std::cout<<program_name<<" -M <M> -v <v> -x <x>"<<std::endl<<std::endl;
+    std::cout<<program_name<<" -A <A> -v <v> -x <x>"<<std::endl<<std::endl;
     std::cout<<"   <A>: Path to numpy matrix file"<<std::endl;
     std::cout<<"   <v>: Path to numpy vector file"<<std::endl;
     std::cout<<"   <x>: Path to numpy file where the result will be stored"<<std::endl<<std::endl;
@@ -34,7 +34,7 @@ void usage_parallel(const std::string &program_name, MPI::MpiInfo info) {
     if(info.getRank() == 0) {
         std::cout<<"There are two ways to call the programm"<<std::endl<<std::endl;
         std::cout<<"Problem from NumPy file:"<<std::endl<<std::endl;
-        std::cout<<"mpirun -n <X> "<<program_name<<" -M <A> -v <v> -x <x>"<<std::endl<<std::endl;
+        std::cout<<"mpirun -n <X> "<<program_name<<" -A <A> -v <v> -x <x>"<<std::endl<<std::endl;
         std::cout<<"   <X>: Number of processes"<<std::endl;
         std::cout<<"   <v>: Path to numpy vector file"<<std::endl;
         std::cout<<"   <A>: Path to numpy matrix file"<<std::endl;
@@ -77,7 +77,7 @@ struct InvokationInfo parse_arguments(int argc, char* argv[]) {
             info.epsilon = std::stod(argv[i]);
         } else if(argv[i-1] == std::string("-m")) {
             info.max_iter = std::stoul(argv[i]);
-        } else if(argv[i-1] == std::string("-M")) {
+        } else if(argv[i-1] == std::string("-A")) {
             info.matrixFileName = argv[i];
         } else if(argv[i-1] == std::string("-v")) {
             info.vectorFileName = argv[i];
