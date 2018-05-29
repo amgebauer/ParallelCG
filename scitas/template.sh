@@ -4,8 +4,6 @@
 #SBATCH --constraint=E5v2
 {reservation}
 
-echo "Strong Skaling with 1 processor"
-
 # load modules
 module purge
 module load gcc/5.4.0
