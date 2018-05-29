@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -n={number_agents}
+#SBATCH -n {number_agents}
 #SBATCH --output=/scratch/gebauer/ParallelCG/out/{problem_name}.out
 #SBATCH --constraint=E5v2
 {reservation}
