@@ -27,7 +27,7 @@ TEST(CGSolverTest, SerialTest) {
 
 
     // solve equation system
-    SOLVE::CGSolver::solveSerial(matrix, vector, solution, 1e-8);
+    SOLVE::CGSolver::solveSerial(matrix, vector, solution, 1e-8, std::numeric_limits<unsigned long>::max());
 
     double error = sqrt((matrix*solution-vector).normSquared());
 
@@ -103,10 +103,10 @@ TEST(CGSolverTest, ParallelTest) {
 
 
         // First solve serial reference system
-        SOLVE::CGSolver::solveSerial(serialMatrix, serialVector, serialSolution, 1e-8);
+        SOLVE::CGSolver::solveSerial(serialMatrix, serialVector, serialSolution, 1e-8, std::numeric_limits<unsigned long>::max());
 
         // Solve parallel system
-        SOLVE::CGSolver::solveParallel(parallelMatrix, parallelVector, parallelSolution, x_0, 1e-8, info);
+        SOLVE::CGSolver::solveParallel(parallelMatrix, parallelVector, parallelSolution, x_0, 1e-8, std::numeric_limits<unsigned long>::max(), info);
 
         // check both solutions
         double serialError = sqrt((serialMatrix*serialSolution-serialVector).normSquared());
