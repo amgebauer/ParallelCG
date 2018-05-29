@@ -51,7 +51,7 @@ def submit(name):
 
 def execute_problem(name, number_agents, problem_size, use_reservation = False, eps = 1e-5, max_iter = -1, fixed_iterations = True):
     generate_problem(name, number_agents, problem_size, use_reservation, eps, max_iter, fixed_iterations)
-    submit(name)x
+    submit(name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
