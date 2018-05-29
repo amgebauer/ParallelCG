@@ -16,17 +16,19 @@ namespace SOLVE {
     class CGSolver {
 
     public:
-        static void solveSerial(const LINALG::SymmetricMatrix& matrix,
+        static unsigned int solveSerial(const LINALG::SymmetricMatrix& matrix,
                           const LINALG::Vector& vector,
                           LINALG::Vector& result,
                           double epsilon,
-                          unsigned long max_iterations);
-        static void solveParallel(const LINALG::DistributedSymmetricMatrix& matrix,
+                          unsigned long max_iterations,
+                          bool fixed_iterations);
+        static unsigned int solveParallel(const LINALG::DistributedSymmetricMatrix& matrix,
                           const LINALG::DistributedVector& vector,
                           LINALG::DistributedVector& result,
                           const LINALG::Vector& x_0,
                           double epsilon,
                           unsigned long max_iterations,
+                          bool fixed_iterations,
                           MPI::MpiInfo& mpiInfo);
     };
 

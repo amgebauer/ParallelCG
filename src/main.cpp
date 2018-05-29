@@ -13,6 +13,7 @@ struct InvokationInfo {
     double epsilon;
     unsigned long max_iter;
     unsigned long problem_size;
+    bool fixed_iterations;
 };
 
 void usage_serial(const std::string &program_name) {
@@ -49,7 +50,13 @@ void usage_parallel(const std::string &program_name, MPI::MpiInfo info) {
     }
 }
 
-void print_statistics(unsigned long problem_size, int rank_size, clock_t begin, clock_t inited, clock_t solved, clock_t finish) {
+void print_statistics(unsigned long problem_size,
+                      int rank_size,
+                      clock_t begin,
+                      clock_t inited,
+                      clock_t solved,
+                      clock_t finish,
+                      unsigned int iterations) {
     unsigned long problem_size_per_proc = problem_size / rank_size;
     if (problem_size % rank_size != 0) {
         ++problem_size_per_proc;
@@ -61,6 +68,7 @@ void print_statistics(unsigned long problem_size, int rank_size, clock_t begin, 
     std::cout<<"Read Time: "<<std::scientific<<(double)(inited-begin)/CLOCKS_PER_SEC<<" s"<<std::endl;
     std::cout<<"Solve Time: "<<std::scientific<<(double)(solved-inited)/CLOCKS_PER_SEC<<" s"<<std::endl;
     std::cout<<"Write Time: "<<std::scientific<<(double)(finish-solved)/CLOCKS_PER_SEC<<" s"<<std::endl;
+    std::cout<<"Iterations: "<<iterations<<std::endl;
 }
 
 struct InvokationInfo parse_arguments(int argc, char* argv[]) {
@@ -68,6 +76,7 @@ struct InvokationInfo parse_arguments(int argc, char* argv[]) {
     info.epsilon = 1e-5;
     info.max_iter = std::numeric_limits<unsigned long>::max();
     info.executionName = argv[0];
+    info.fixed_iterations = false;
 
     for (int i=2;i<argc;i+=2) {
 
@@ -83,10 +92,14 @@ struct InvokationInfo parse_arguments(int argc, char* argv[]) {
             info.vectorFileName = argv[i];
         } else if(argv[i-1] == std::string("-x")) {
             info.solutionFileName = argv[i];
+        } else if(argv[i-1] == std::string("-fi")
+                  && (argv[i] == std::string("1") || argv[i-1] == std::string("true"))) {
+            info.fixed_iterations = true;
         }
 
     }
 
+    std::cout<<info.fixed_iterations<<std::endl;
 
     return info;
 }
@@ -144,7 +157,12 @@ int execute_serial_problem(struct InvokationInfo invokationInfo) {
     std::cout<<"Solve Ax=b"<<std::endl;
 
     // Solve
-    SOLVE::CGSolver::solveSerial(matrix, vector, solution, invokationInfo.epsilon, invokationInfo.max_iter);
+    unsigned int iterations = SOLVE::CGSolver::solveSerial(matrix,
+             vector,
+             solution,
+             invokationInfo.epsilon,
+             invokationInfo.max_iter,
+             invokationInfo.fixed_iterations);
 
     std::cout<<"Solution found!"<< std::endl;
 
@@ -157,7 +175,7 @@ int execute_serial_problem(struct InvokationInfo invokationInfo) {
     }
 
     clock_t finish = clock();
-    print_statistics(solution.getSize(), 1, begin, init, solve, finish);
+    print_statistics(solution.getSize(), 1, begin, init, solve, finish, iterations);
     return 0;
 }
 
@@ -216,7 +234,14 @@ int execute_parallel_problem(struct InvokationInfo invokationInfo, MPI::MpiInfo&
 
     // Solve
     LINALG::Vector x_0(0);
-    SOLVE::CGSolver::solveParallel(matrix, vector, solution, x_0, 1e-5, invokationInfo.max_iter, info);
+    unsigned int iterations = SOLVE::CGSolver::solveParallel(matrix,
+                                   vector,
+                                   solution,
+                                   x_0,
+                                   1e-5,
+                                   invokationInfo.max_iter,
+                                   invokationInfo.fixed_iterations,
+                                   info);
 
     if (info.getRank() == 0) {
         std::cout << "Solution found!" << std::endl;
@@ -235,7 +260,7 @@ int execute_parallel_problem(struct InvokationInfo invokationInfo, MPI::MpiInfo&
 
     if (info.getRank() == 0) {
         clock_t finish = clock();
-        print_statistics(solution.getSize(), info.getSize(), begin, init, solve, finish);
+        print_statistics(solution.getSize(), info.getSize(), begin, init, solve, finish, iterations);
     }
     return 0;
 }

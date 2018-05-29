@@ -6,20 +6,26 @@
 #include <iostream>
 #include "CGSolver.h"
 
-void SOLVE::CGSolver::solveSerial(const LINALG::SymmetricMatrix &matrix,
+unsigned int SOLVE::CGSolver::solveSerial(const LINALG::SymmetricMatrix &matrix,
                             const LINALG::Vector &vector,
                             LINALG::Vector &result,
                             const double epsilon,
-                            const unsigned long max_iterations) {
+                            const unsigned long max_iterations,
+                            const bool fixed_iterations) {
 
     double epsilonSquared = epsilon*epsilon;
+
+    if(fixed_iterations) {
+        // make fixed iterations --> set epsilon negative so that it will never be reached
+        epsilonSquared = -1;
+    }
 
     LINALG::Vector r = vector-matrix*result;
     LINALG::Vector p = r;
 
     double r_squared = r*r;
 
-    int iter = 0;
+    unsigned int iter = 0;
     while (r_squared > epsilonSquared && iter < max_iterations) {
         const LINALG::Vector tmpVector = matrix*p;
 
@@ -35,17 +41,24 @@ void SOLVE::CGSolver::solveSerial(const LINALG::SymmetricMatrix &matrix,
         p.add(1, r, beta);
         iter += 1;
     }
+    return iter;
 }
 
-void SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &matrix,
+unsigned int SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &matrix,
                                     const LINALG::DistributedVector &vector,
                                     LINALG::DistributedVector &result,
                                     const LINALG::Vector& x_0,
                                     const double epsilon,
                                     const unsigned long max_iterations,
+                                    const bool fixed_iterations,
                                     MPI::MpiInfo& mpiInfo) {
 
-    double epsilonSquared = pow(epsilon, 2.0);
+    double epsilonSquared = epsilon*epsilon;
+
+    if(fixed_iterations) {
+        // make fixed iterations --> set epsilon negative so that it will never be reached
+        epsilonSquared = -1;
+    }
 
     LINALG::DistributedVector r = vector;
     if(x_0.getSize() > 0) {
@@ -56,7 +69,7 @@ void SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &ma
 
     double r_squared = r.distributedProduct(r);
 
-    int iter = 0;
+    unsigned int iter = 0;
     while(r_squared > epsilonSquared && iter < max_iterations) {
         LINALG::Vector p_full = p.getFull(mpiInfo);
         const LINALG::DistributedVector tmpVector = matrix*p_full;
@@ -72,4 +85,6 @@ void SOLVE::CGSolver::solveParallel(const LINALG::DistributedSymmetricMatrix &ma
         p.add(1, r, beta);
         iter += 1;
     }
+
+    return iter;
 }
