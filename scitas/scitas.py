@@ -27,7 +27,7 @@ def __generate_file_placeholder(template_file, output_file, placeholders):
     template_head.close()
     input_head.close()
 
-def generate_problem(name, number_agents, problem_size, use_reservation = False, eps = 1e-5, max_iter = -1):
+def generate_problem(name, number_agents, problem_size, use_reservation = False, eps = 1e-5, max_iter = -1, fixed_iterations = True):
     # generates the shell-file
     my_dir = os.path.dirname(__file__)
 
@@ -37,6 +37,7 @@ def generate_problem(name, number_agents, problem_size, use_reservation = False,
     placeholders['problem_size'] = str(problem_size)
     placeholders['reservation'] = '#SBATCH --reservation=phpc2018' if use_reservation else ''
     placeholders['max_iter'] = ' -m {0}'.format(max_iter) if max_iter > 0 else ''
+    placeholders['fixed_iterations'] = ' -fi 1' if fixed_iterations else ''
     placeholders['eps'] = ' -e {0}'.format(eps)
 
     __generate_file_placeholder(os.path.join(my_dir, 'template.sh'), 
@@ -48,9 +49,9 @@ def submit(name):
     my_dir = os.path.dirname(__file__)
     subprocess.call("sbatch {0}".format(os.path.join(my_dir, '..', 'run_scripts', '{0}.sh'.format(name))), shell=True)
 
-def execute_problem(name, number_agents, problem_size, use_reservation = False, eps = 1e-5, max_iter = -1):
-    generate_problem(name, number_agents, problem_size, use_reservation, eps, max_iter)
-    submit(name)
+def execute_problem(name, number_agents, problem_size, use_reservation = False, eps = 1e-5, max_iter = -1, fixed_iterations = True):
+    generate_problem(name, number_agents, problem_size, use_reservation, eps, max_iter, fixed_iterations)
+    submit(name)x
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
