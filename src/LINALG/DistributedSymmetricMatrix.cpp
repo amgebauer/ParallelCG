@@ -9,7 +9,7 @@
 LINALG::DistributedSymmetricMatrix::DistributedSymmetricMatrix(unsigned long size,
                                                                unsigned long startRow,
                                                                unsigned long localSize)
-        : values(size*localSize), globalSize(size), startRow(startRow), localSize(localSize) {}
+        : values(localSize*size-(localSize*localSize-localSize)/2), globalSize(size), startRow(startRow), localSize(localSize) {}
 
 unsigned long LINALG::DistributedSymmetricMatrix::getLocalIndex(unsigned long i, unsigned long j) const {
 
@@ -22,10 +22,15 @@ unsigned long LINALG::DistributedSymmetricMatrix::getLocalIndex(unsigned long i,
         j = i;
         i = tmpVar;
     }
-    // ToDo: More advanced saving technique
-    // right now we are not exploiting the symmetric structure of the matrix
 
-    return (i-startRow)*globalSize+j;
+    // efficient version
+    unsigned long I = (2*(i*globalSize+i*startRow)+i-2*startRow*globalSize-i*i-startRow*startRow-startRow)/2+j;
+
+    if (j > startRow) {
+        I -= i-startRow;
+    }
+
+    return I;
 }
 
 const double &LINALG::DistributedSymmetricMatrix::get(unsigned long i, unsigned long j) const {
@@ -66,7 +71,7 @@ LINALG::DistributedVector LINALG::DistributedSymmetricMatrix::operator*(const LI
 }
 
 void LINALG::DistributedSymmetricMatrix::resize(unsigned long size, unsigned long startRow, unsigned long localSize) {
-    values.resize(size*localSize, 0.0);
+    values.resize(localSize*size-(localSize*localSize-localSize)/2, 0.0);
     this->startRow = startRow;
     this->localSize = localSize;
     this->globalSize = size;

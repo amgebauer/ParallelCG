@@ -40,6 +40,47 @@ TEST(DistributedSymmetricMatrixTest, MatrixVectorMul) {
     }
 }
 
+TEST(DistributedSymmetricMatrixTest, MatrixStorageTest) {
+
+    LINALG::DistributedSymmetricMatrix fullMatrix(6, 2, 2);
+
+
+    for (unsigned long size = 100;size<110;++size) {
+
+        for (unsigned long startRow = 10;startRow<20;++startRow) {
+
+            for (unsigned long localSize = 10;localSize<30;++localSize) {
+
+                LINALG::DistributedSymmetricMatrix fullMatrix(size, startRow, localSize);
+
+                // set values of row
+                for (unsigned long i = startRow;i<startRow+localSize;++i) {
+
+                    for (unsigned long j = 0; j< size; ++j) {
+
+                        fullMatrix(i, j) = i+j+i*j;
+
+                    }
+
+                }
+
+                // check values
+                for (unsigned long i = startRow;i<startRow+localSize;++i) {
+
+                    for (unsigned long j = 0; j< size; ++j) {
+
+                        ASSERT_EQ(fullMatrix.get(i, j), (double)(i+j+i*j));
+
+                    }
+
+                }
+
+            }
+
+        }
+    }
+}
+
 TEST(DistributedSymmetricMatrixTest, OutOfRange) {
     LINALG::DistributedSymmetricMatrix matrix(2, 0, 1);
 
